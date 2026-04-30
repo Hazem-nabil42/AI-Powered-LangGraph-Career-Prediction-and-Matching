@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Agent - JIRAG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/css/sidebar.css">
+  <link rel="stylesheet" href="/src/css/shared.css">
+  <link rel="stylesheet" href="/src/css/output.css">
+  <style>
+    :root {
+      --bg: #060c18;
+      --surface: #0d1626;
+      --surface2: #111d30;
+      --border: #1a2840;
+      --border2: #243350;
+      --teal: #2dd4bf;
+      --teal-dim: rgba(45,212,191,0.12);
+      --teal-glow: rgba(45,212,191,0.25);
+      --text: #eee9e0;
+      --muted: #5a6a82;
+      --orange: #fb923c;
+      --red: #f87171;
+      --green: #4ade80;
+    }
+  </style>
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    .mono { font-family: 'Space Mono', monospace; }
+    .chat-bubble {
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(45, 212, 191, 0.1);
+      border: 1px solid rgba(45, 212, 191, 0.2);
+    }
+    .thinking {
+      opacity: 0.7;
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <aside>
+    <div class="sidebar-logo">
+      <div class="logo-mark">JIRAG</div>
+      <!-- <div class="logo-sub">Career Copilot · v2.0</div> -->
+    </div>
+
+    <nav>
+      <div class="nav-section-label">Main</div>
+
+      <a href="/" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="/search" class="nav-item">
+        <span class="nav-icon">🔍</span>
+        <span>Job Search</span>
+      </a>
+      <a href="/agent" class="nav-item active">
+        <span class="nav-icon">🤖</span>
+        <span>AI Agent</span>
+      </a>
+
+      <div class="nav-section-label" style="margin-top:12px">Insights</div>
+
+      <a href="/prediction" class="nav-item">
+        <span class="nav-icon">🎯</span>
+        <span>Career Prediction</span>
+      </a>
+      <a href="/notifications" class="nav-item">
+        <span class="nav-icon">🔔</span>
+        <span>Notifications</span>
+        <span class="badge">3</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar"></div>
+        <div class="user-info">
+          <!-- <div class="name">Ahmed Hassan</div> -->
+          <div class="role">Agentic AI Engineer</div>
+        </div>
+        <span style="color:var(--muted); font-size:18px; margin-right:auto;">⚙️</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="greeting-sub">Date</div>
+        <!-- <h1 class="greeting-title">Good morning, Ahmed 👋</h1> -->
+        <p class="greeting-desc">Your AI copilot found 12 new opportunities overnight.</p>
+      </div>
+      <div class="header-actions">
+        <div class="status-pill status-live">
+          <span class="dot"></span>
+          Agent Active
+        </div>
+        <div class="icon-btn">
+          🔔
+          <span class="notif-dot"></span>
+        </div>
+        <div class="avatar" style="width:42px;height:42px;border-radius:12px;font-size:16px;"></div>
+      </div>
+    </div>
+
+        <!-- Example Prompts -->
+        <div class="my-6">
+          <p class="text-sm text-slate-500 mono mb-3">Try asking:</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="sendMessage('Find me Python developer jobs in Cairo with 0-2 years experience')" 
+              class="text-left p-4 bg-[#161f30] border border-[#1e2d42] hover:border-teal-400 rounded-xl transition-all text-sm">
+              <p class="text-slate-300 font-semibold">💻 Python Developer Jobs</p>
+              <p class="text-slate-500 text-xs mt-1">Find entry-level opportunities</p>
+            </button>
+            <button onclick="sendMessage('Show me internship opportunities for fresh graduates')" 
+              class="text-left p-4 bg-[#161f30] border border-[#1e2d42] hover:border-teal-400 rounded-xl transition-all text-sm">
+              <p class="text-slate-300 font-semibold">🎓 Internships</p>
+              <p class="text-slate-500 text-xs mt-1">Entry-level opportunities</p>
+            </button>
+            <button onclick="sendMessage('Find language learning opportunities and courses')" 
+              class="text-left p-4 bg-[#161f30] border border-[#1e2d42] hover:border-teal-400 rounded-xl transition-all text-sm">
+              <p class="text-slate-300 font-semibold">📚 Learning Paths</p>
+              <p class="text-slate-500 text-xs mt-1">Courses and certifications</p>
+            </button>
+            <button onclick="sendMessage('Show volunteering opportunities in tech')" 
+              class="text-left p-4 bg-[#161f30] border border-[#1e2d42] hover:border-teal-400 rounded-xl transition-all text-sm">
+              <p class="text-slate-300 font-semibold">🤝 Volunteering</p>
+              <p class="text-slate-500 text-xs mt-1">Give back while learning</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Agent Thinking -->
+        <div class="chat-bubble" id="thinkingBubble" style="display: none;">
+          <div class="bg-[#161f30]/50 border border-[#1e2d42] rounded-2xl p-5 max-w-2xl">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 bg-teal-400 rounded-full animate-pulse"></div>
+              <p class="text-slate-400 text-sm thinking">Agent is analyzing your request across multiple sources...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Response with Sources -->
+        <div class="chat-bubble" id="responseBubble" style="display: none;">
+          <div class="bg-[#161f30] border border-teal-400/20 rounded-2xl p-5 max-w-2xl">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🤖</span>
+              <span class="mono text-xs text-teal-400">AI Agent Response</span>
+            </div>
+            
+            <!-- Response Text -->
+            <p id="responseText" class="text-slate-300 leading-relaxed mb-4"></p>
+
+            <!-- Sources Used -->
+            <div id="sourcesContainer" class="mt-4 pt-4 border-t border-[#1e2d42]">
+              <p class="text-xs text-slate-500 mono mb-3">Sources searched:</p>
+              <div class="flex flex-wrap gap-2" id="sourcesList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opportunities Grid -->
+        <div id="opportunitiesContainer" style="display: none;" class="mt-6">
+          <p class="text-sm text-slate-500 mono mb-4">Opportunities found:</p>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" id="opportunitiesGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="border-t border-[#1e2d42] p-6 bg-[#0f1622]/50">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex gap-3">
+          <input
+            type="text"
+            id="agentInput"
+            placeholder="Ask me anything about jobs, internships, learning opportunities..."
+            onkeydown="if(event.key==='Enter' && !event.shiftKey) sendMessage()"
+            class="flex-1 bg-[#161f30] border border-[#1e2d42] rounded-xl px-5 py-4 text-slate-300 placeholder-slate-500 focus:border-teal-400 outline-none transition-colors"
+          />
+          <button onclick="sendMessage()" class="px-6 py-4 bg-teal-400 hover:bg-teal-500 text-[#0b1120] rounded-xl font-bold transition-colors">
+            Send
+          </button>
+        </div>
+        <p class="text-xs text-slate-500 mt-2 mono">💡 Shift+Enter for new line</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="/src/JS/modules/agent.js"></script>
+</body>
+</html>

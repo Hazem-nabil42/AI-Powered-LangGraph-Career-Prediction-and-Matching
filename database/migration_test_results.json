@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-04-27T17:27:29.040336",
+  "test_queries": [
+    "python developer",
+    "data scientist cairo",
+    "senior engineer"
+  ],
+  "comparisons": [
+    {
+      "query": "python developer",
+      "chroma_results": [
+        "Python Developer",
+        "Senior Python Developer",
+        "Semi Senior Python Developer - Remote Work",
+        "Mid Level Rest API Django Python Developer",
+        "Odoo Developer"
+      ],
+      "pinecone_results": [
+        "Python Developer",
+        "Python Developer",
+        "Software Engineer - Python",
+        "Senior Python Developer",
+        "Mid-Level Back-End Python Engineer"
+      ],
+      "match_rate": 0.4
+    },
+    {
+      "query": "data scientist cairo",
+      "chroma_results": [
+        "Data Scientist \u2013 Computer Vision & Financial Intelligence",
+        "Data Scientist",
+        "Middle Data Scientist",
+        "Senior Data Scientist",
+        "Senior Data Scientist \u2013 GenAI"
+      ],
+      "pinecone_results": [
+        "Product Specialist (Laboratory Medical Devices)",
+        "Junior Quantity Surveyors",
+        "Data Scientist",
+        "Data Scientist",
+        "Data Scientist"
+      ],
+      "match_rate": 0.2
+    },
+    {
+      "query": "senior engineer",
+      "chroma_results": [
+        "Senior Sales Engineer (Instrumentation)",
+        "Senior Quality Engineer (QC,QA) (Sheet Metal & Metal Fabrication)",
+        "Senior Architectural Engineer - Technical Office & Project Management",
+        "SR. MECHANICAL ENGINEER",
+        "Senior Network Engineer"
+      ],
+      "pinecone_results": [
+        "Senior Tendering Engineer ( Civil / Arch. )",
+        "Senior Sales Engineer (Instrumentation)",
+        "Senior Maintenance Planning Engineer",
+        "Senior mechanical estimation Engineer",
+        "Senior HSE Engineer"
+      ],
+      "match_rate": 0.2
+    }
+  ]
+}

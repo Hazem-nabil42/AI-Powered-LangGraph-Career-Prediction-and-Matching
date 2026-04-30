@@ -6,6 +6,7 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 import urllib.parse, time, json
 from concurrent.futures import ThreadPoolExecutor
+from database.pinecone_retriever import is_job_fresh
 
 BASE_URL = "https://wuzzuf.net"
 
@@ -44,12 +45,12 @@ def get_job_details_sync(url):
         return {}
 
 
-#scrape الوظايف من Wuzzuf بـ keyword معين
 def _scrape_sync(query, num_pages=2):
     """بيشتغل في thread منفصل"""
     print(f"🌐 Live scraping: '{query}'...")
     encoded = urllib.parse.quote(query)
     jobs = []
+    filtered_count = 0
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -79,23 +80,36 @@ def _scrape_sync(query, num_pages=2):
 
                 location_tag = card.find('span', class_=lambda x: x and 'css-16x61xq' in x)
                 location = location_tag.get_text(strip=True) if location_tag else "N/A"
+                
+                # Extract posted date/time
+                posted_tag = card.find('span', class_=lambda x: x and 'css-' in (x or ''))
+                posted = posted_tag.get_text(strip=True) if posted_tag else "N/A"
 
-                jobs.append({
+                job_obj = {
                     "title":        title,
                     "url":          job_url,
                     "company":      company,
                     "location":     location,
+                    "posted":       posted,
                     "job_type":     "N/A",
                     "experience":   "N/A",
                     "level":        "N/A",
                     "description":  "N/A",
                     "requirements": "N/A",
                     "source":       "live"
-                })
+                }
+                
+                # ✨ FRESHNESS FILTER: Skip outdated jobs
+                if not is_job_fresh(job_obj):
+                    filtered_count += 1
+                    print(f"  ⏭️  Skipping old job: {title} (posted: {posted})")
+                    continue
+                
+                jobs.append(job_obj)
             time.sleep(1.5)
         browser.close()
 
-    print(f"✅ Live found {len(jobs)} jobs")
+    print(f"✅ Live found {len(jobs)} fresh jobs (filtered out {filtered_count} old jobs)")
     
     #details for each job
     print(f"📋 Getting details for {len(jobs)} jobs...")

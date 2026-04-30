@@ -6,6 +6,12 @@ from groq import Groq
 from database.hybrid_retriever import hybrid_search
 from dotenv import load_dotenv
 from dotenv import load_dotenv
+# fresh and open jobs filter
+import datetime
+# regex keywords matching
+import re
+
+
 
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -36,29 +42,74 @@ def format_jobs_for_llm(results):
         ---"""
     return text
 
+
+# filter out jobs that are not open or posted more than 2 weeks ago
+def is_job_open(job):
+    """تحقق من حالة الوظيفة (Open) وتاريخ نشرها."""
+    status = job.get('status', '').lower()
+    posted_date_str = job.get('posted_date', '')
+    
+    if status != 'open':
+        return False
+    
+    # نفترض إن posted_date هو في صيغة YYYY-MM-DD
+    if posted_date_str:
+        posted_date = datetime.datetime.strptime(posted_date_str, "%Y-%m-%d").date()
+        today = datetime.date.today()
+        # خلي الحد الأقصى أسبوعين
+        delta_days = (today - posted_date).days
+        if delta_days <= 14:  # خلال أسبوعين
+            return True
+    return False
+
+# فلترة النتائج بحيث تكون الوظائف مفتوحة وحديثة
+def filter_fresh_open_jobs(results):
+    """فلترة النتائج بحيث تكون الوظائف مفتوحة وحديثة."""
+    filtered = []
+    for r in results:
+        job = r['job']
+        if is_job_open(job):
+            filtered.append(r)
+    return filtered
+
+
 # is the results relevant enough to the query? (based on keyword matching)
-def results_are_relevant(query, results, min_keyword_match=0.5):
+def results_are_relevant(query, results, min_keyword_match=0.3):
     if not results:
         return False
 
-    query_words = set(query.lower().split())
-    query_words = {w for w in query_words if len(w) > 3}  # شيل كلمات أقل من 4 حروف
+    # نحاول نستخدم تعبير نمطي لفصل العبارات المركبة بشكل أفضل
+    # مثلاً، نفصل بين الكلمات بناءً على حدود الكلمات، لكن نترك العبارات المركبة زي هي
+    query_words = re.findall(r"\b[a-zA-Z0-9]+\b", query.lower())
+
+    # Include shorter words for better matching
+    query_words = {w for w in query_words if len(w) >= 2}  
+
+    # Special case: if query is very general like "recent opportunities", 
+    # don't require strict keyword matching
+    if len(query_words) <= 2 and any(word in query.lower() for word in ['recent', 'latest', 'new', 'today', 'week', 'month']):
+        return True  # Always show results for browsing queries
 
     print(f"🔍 Checking keywords: {query_words}")
 
     matched = 0
     for r in results[:3]:
         job = r['job']
-        # ← title بس مش description
+        # Check multiple fields for better matching
         job_title = job.get('title', '').lower()
+        job_description = job.get('description', '').lower()
+        job_company = job.get('company', '').lower()
+        
+        # Combine fields for searching
+        searchable_text = f"{job_title} {job_description} {job_company}"
 
         for word in query_words:
-            if word in job_title:
+            if word in searchable_text:
                 matched += 1
-                print(f"  ✅ '{word}' found in: {job_title[:50]}")
+                print(f"  ✅ '{word}' found in: {searchable_text[:50]}")
                 break
         else:
-            print(f"  ❌ No match in: {job_title[:50]}")
+            print(f"  ❌ No match in: {searchable_text[:50]}")
 
     match_ratio = matched / min(3, len(results))
     print(f"📊 Match ratio: {match_ratio:.0%} ({matched}/3 jobs)")
@@ -119,6 +170,9 @@ async def ask_stream(user_query):
     """بترجع generator بيدي الكلام كلمة كلمة"""
     results = hybrid_search(user_query, n_results=15)
 
+    # check result are fresh first
+    results = filter_fresh_open_jobs(results)
+
     if not results_are_relevant(user_query, results):
         from scraper.live_scraper import live_search_async, add_to_db
         live_jobs = await live_search_async(user_query)
@@ -143,7 +197,7 @@ async def ask_stream(user_query):
 
     # ── Streaming ──
     stream = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant", # llama 8b, deepseek
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -178,6 +232,62 @@ async def ask_stream(user_query):
             yield f"data: {json.dumps({'type': 'text', 'content': text})}\n\n"
 
     yield "data: [DONE]\n\n"
+
+
+async def ask_non_stream(user_query):
+    """Returns answer and jobs list as tuple (non-streaming version)"""
+    results = hybrid_search(user_query, n_results=15)
+
+    if not results_are_relevant(user_query, results):
+        from scraper.live_scraper import live_search_async, add_to_db
+        live_jobs = await live_search_async(user_query)
+        if live_jobs:
+            add_to_db(live_jobs)
+            results = [{"job": j, "score": 1.0} for j in live_jobs[:5]]
+
+    jobs_context = format_jobs_for_llm(results)
+
+    system_prompt = """أنت مساعد متخصص في إيجاد الوظائف في مصر.
+    - رد بالعربي الفصيح فقط
+    - كن مختصر ومفيد
+    - رتّب الوظايف من الأنسب للأقل
+    - وضّح ليه كل وظيفة مناسبة في جملة واحدة
+    - لا تذكر أي روابط أو URLs — الروابط موجودة في الكاردز
+    - اكتب فقط اسم الوظيفة والشركة وسبب المناسبة"""
+
+    user_prompt = f"""المستخدم بيدور على: "{user_query}"
+    الوظايف المتاحة:
+    {jobs_context}
+    رشّحله أنسب الوظايف مع شرح بسيط."""
+
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        max_tokens=1000,
+        stream=False
+    )
+
+    answer = response.choices[0].message.content
+
+    # Format jobs data
+    jobs_data = []
+    for r in results:
+        job = r['job']
+        jobs_data.append({
+            "title":      job.get("title", "N/A"),
+            "company":    job.get("company", "N/A"),
+            "location":   job.get("location", "N/A"),
+            "experience": job.get("experience", "N/A"),
+            "level":      job.get("level", "N/A"),
+            "job_type":   job.get("job_type", "N/A"),
+            "url":        job.get("url", "#"),
+            "source":     job.get("source", "wuzzuf"),
+        })
+
+    return answer, jobs_data
 
 
 if __name__ == "__main__":

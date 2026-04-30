@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JIRAG — Career Copilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/css/sidebar.css">
+  <link rel="stylesheet" href="/src/css/shared.css">
+  <!-- charts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #060c18;
+      --surface: #0d1626;
+      --surface2: #111d30;
+      --border: #1a2840;
+      --border2: #243350;
+      --teal: #2dd4bf;
+      --teal-dim: rgba(45,212,191,0.12);
+      --teal-glow: rgba(45,212,191,0.25);
+      --text: #eee9e0;
+      --muted: #5a6a82;
+      --orange: #fb923c;
+      --red: #f87171;
+      --green: #4ade80;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 80% -10%, rgba(45,212,191,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 20% 110%, rgba(6,182,212,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .mono { font-family: 'Space Mono', monospace; }
+    .display { font-family: 'Syne', sans-serif; }
+
+    </style>
+</head>
+
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <aside>
+    <div class="sidebar-logo">
+      <div class="logo-mark">JIRAG</div>
+      <!-- <div class="logo-sub">Career Copilot · v2.0</div> -->
+    </div>
+
+    <nav>
+      <div class="nav-section-label">Main</div>
+
+      <a href="/" class="nav-item active">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="/search" class="nav-item">
+        <span class="nav-icon">🔍</span>
+        <span>Job Search</span>
+      </a>
+      <a href="/agent" class="nav-item">
+        <span class="nav-icon">🤖</span>
+        <span>AI Agent</span>
+      </a>
+
+      <div class="nav-section-label" style="margin-top:12px">Insights</div>
+
+      <a href="/prediction" class="nav-item">
+        <span class="nav-icon">🎯</span>
+        <span>Career Prediction</span>
+      </a>
+      <a href="/notifications" class="nav-item">
+        <span class="nav-icon">🔔</span>
+        <span>Notifications</span>
+        <span class="badge">3</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar"></div>
+        <div class="user-info">
+          <!-- <div class="name">Ahmed Hassan</div> -->
+          <div class="role">Agentic AI Engineer</div>
+        </div>
+        <span style="color:var(--muted); font-size:18px; margin-right:auto;">⚙️</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="greeting-sub">Date</div>
+        <!-- <h1 class="greeting-title">Good morning, Ahmed 👋</h1> -->
+        <p class="greeting-desc">Your AI copilot found 12 new opportunities overnight.</p>
+      </div>
+      <div class="header-actions">
+        <div class="status-pill status-live">
+          <span class="dot"></span>
+          Agent Active
+        </div>
+        <div class="icon-btn">
+          🔔
+          <span class="notif-dot"></span>
+        </div>
+        <div class="avatar" style="width:42px;height:42px;border-radius:12px;font-size:16px;"></div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card" style="animation-delay:0.05s">
+        <span class="stat-icon">🏆</span>
+        <div class="stat-label">Profile Score</div>
+        <div class="stat-value">85<span style="font-size:20px;color:var(--muted)">%</span></div>
+        <div class="stat-delta up">↑ 5% this month</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:85%"></div></div>
+      </div>
+
+      <div class="stat-card" style="animation-delay:0.12s">
+        <span class="stat-icon">💼</span>
+        <div class="stat-label">Opportunities</div>
+        <div class="stat-value">127</div>
+        <div class="stat-delta up">↑ 12 this week</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:72%"></div></div>
+      </div>
+
+      <div class="stat-card" style="animation-delay:0.19s">
+        <span class="stat-icon">📤</span>
+        <div class="stat-label">Applications</div>
+        <div class="stat-value">8</div>
+        <div class="stat-delta neutral">2 pending review</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:40%; background:linear-gradient(90deg,#fb923c,#f97316)"></div></div>
+      </div>
+
+      <div class="stat-card" style="animation-delay:0.26s">
+        <span class="stat-icon">🎙️</span>
+        <div class="stat-label">Interviews</div>
+        <div class="stat-value">3</div>
+        <div class="stat-delta warn">Next week</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:20%; background:linear-gradient(90deg,#fb923c,#f87171)"></div></div>
+      </div>
+    </div>
+
+    <!-- Chart + Activity -->
+    <div class="content-grid">
+      <!-- Chart -->
+      <div class="chart-card">
+        <div class="section-header">
+          <span class="section-title">📈 Opportunity Trend</span>
+          <div style="display:flex;gap:8px">
+            <span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--teal);cursor:pointer">Week</span>
+            <span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);cursor:pointer">Month</span>
+          </div>
+        </div>
+        <canvas id="trendChart" style="max-height:180px"></canvas>
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="activity-card">
+        <div class="section-header">
+          <span class="section-title">⚡ Live Activity</span>
+          <span class="status-pill status-live" style="font-size:10px;padding:3px 8px"><span class="dot"></span>Live</span>
+        </div>
+
+        <div class="activity-item">
+          <span class="activity-dot" style="background:var(--teal)"></span>
+          <div>
+            <div class="activity-text">AI Agent found <strong style="color:var(--teal)">Senior Python Dev</strong> at AZM Squad</div>
+            <div class="activity-time">2 min ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <span class="activity-dot" style="background:var(--green)"></span>
+          <div>
+            <div class="activity-text">Application <strong style="color:var(--green)">shortlisted</strong> at Vodafone Egypt</div>
+            <div class="activity-time">1 hr ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <span class="activity-dot" style="background:var(--orange)"></span>
+          <div>
+            <div class="activity-text">Interview reminder: <strong style="color:var(--orange)">Noon Egypt</strong> on Tue 28 Apr</div>
+            <div class="activity-time">3 hr ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <span class="activity-dot" style="background:var(--muted)"></span>
+          <div>
+            <div class="activity-text">n8n workflow pushed 4 new notifications</div>
+            <div class="activity-time">6 hr ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-header">
+      <span class="section-title">⚡ Quick Actions</span>
+    </div>
+    <div class="actions-grid">
+      <a href="/prediction" class="action-card" style="animation-delay:0.1s">
+        <span class="action-emoji">🎯</span>
+        <div class="action-title">Find Career Path</div>
+        <div class="action-desc">Discover your ideal trajectory based on skills & preferences</div>
+      </a>
+      <a href="/agent" class="action-card" style="animation-delay:0.18s">
+        <span class="action-emoji">🤖</span>
+        <div class="action-title">Chat with AI Agent</div>
+        <div class="action-desc">Get personalized picks from LangGraph multi-agent system</div>
+      </a>
+      <a href="/search" class="action-card" style="animation-delay:0.26s">
+        <span class="action-emoji">🔍</span>
+        <div class="action-title">Search Opportunities</div>
+        <div class="action-desc">LinkedIn, ITI, NTI, Wuzzuf & more — all in one place</div>
+      </a>
+    </div>
+
+    <!-- Recent Opportunities -->
+    <div class="section-header" style="margin-top:8px">
+      <span class="section-title">🌟 Recent Opportunities</span>
+      <a href="/search" class="view-all">View all →</a>
+      <button id="refreshOpportunities" class="refresh-btn" style="margin-left:auto; background:none; border:none; color:var(--teal); cursor:pointer;">
+        🔄
+      </button>
+    </div>
+
+    <div id="opportunitiesLoading" class="text-center py-8">
+      <div class="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+      <p class="text-slate-400 text-sm">Loading opportunities...</p>
+    </div>
+
+    <div id="opportunitiesContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <!-- Opportunities will be inserted here by JavaScript -->
+    </div>
+
+  </main>
+
+  <script>
+    // Chart
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        datasets: [{
+          label: 'Opportunities',
+          data: [18, 24, 19, 31, 28, 35, 42],
+          borderColor: '#2dd4bf',
+          backgroundColor: (ctx) => {
+            const g = ctx.chart.ctx.createLinearGradient(0,0,0,180);
+            g.addColorStop(0,'rgba(45,212,191,0.18)');
+            g.addColorStop(1,'rgba(45,212,191,0)');
+            return g;
+          },
+          borderWidth: 2.5,
+          pointRadius: 4,
+          pointBackgroundColor: '#2dd4bf',
+          pointBorderColor: '#060c18',
+          pointBorderWidth: 2,
+          tension: 0.45,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: '#0d1626',
+          borderColor: '#1a2840',
+          borderWidth: 1,
+          titleColor: '#5a6a82',
+          bodyColor: '#eee9e0',
+          titleFont: { family: 'Space Mono', size: 10 },
+          bodyFont: { family: 'Syne', size: 15, weight: '700' },
+          padding: 12,
+        }},
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6a82', font: { family: 'Space Mono', size: 10 }}},
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6a82', font: { family: 'Space Mono', size: 10 }}, beginAtZero: true }
+        }
+      }
+    });
+   </script>
+   
+   <script>
+   // Fetch and display recent opportunities
+   async function loadRecentOpportunities() {
+       const container = document.getElementById('opportunitiesContainer');
+       const loading = document.getElementById('opportunitiesLoading');
+       
+       try {
+           loading.style.display = 'block';
+           container.style.display = 'none';
+           
+           // Fetch recent opportunities from the search endpoint
+           const response = await fetch('/search/stream', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ 
+                   query: 'recent opportunities',
+                   opportunity_type: 'all'
+               })
+           });
+           
+           const reader = response.body.getReader();
+           const decoder = new TextDecoder();
+           let buffer = '';
+           let opportunities = [];
+           
+           while (true) {
+               const { done, value } = await reader.read();
+               if (done) break;
+               
+               buffer += decoder.decode(value);
+               const lines = buffer.split('\n');
+               buffer = lines.pop();
+               
+               for (const line of lines) {
+                   if (!line.startsWith('data: ')) continue;
+                   const data = line.slice(6);
+                   if (data === '[DONE]') break;
+                   
+                   try {
+                       const event = JSON.parse(data);
+                       if (event.type === 'opportunity') {
+                           opportunities.push(event.data);
+                       }
+                   } catch (e) {
+                       console.error('Error parsing event:', e);
+                   }
+               }
+           }
+           
+           // Clear and populate container
+           container.innerHTML = '';
+           
+           if (opportunities.length === 0) {
+               container.innerHTML = `
+                   <div class="col-span-2 text-center py-8">
+                       <p class="text-slate-400">No recent opportunities found. Try searching for specific roles.</p>
+                   </div>
+               `;
+           } else {
+               // Display up to 6 recent opportunities
+               opportunities.slice(0, 6).forEach(opp => {
+                   const card = document.createElement('div');
+                   card.className = 'job-card';
+                   card.innerHTML = `
+                       <div class="job-logo">💼</div>
+                       <div class="job-info">
+                           <div class="job-title">${opp.title || 'Opportunity'}</div>
+                           <div class="job-company">${opp.company || 'Unknown Company'} · ${opp.location || 'Egypt'}</div>
+                           <div class="job-tags">
+                               <span class="tag">${opp.job_type || 'Full-time'}</span>
+                               <span class="tag">${opp.experience || 'Experience'}</span>
+                           </div>
+                       </div>
+                       <span class="match-badge match-high">${opp.match || '85'}%</span>
+                       <button class="view-btn" onclick="window.open('${opp.url || '#'}', '_blank')">View</button>
+                   `;
+                   container.appendChild(card);
+               });
+           }
+           
+       } catch (error) {
+           console.error('Error loading opportunities:', error);
+           container.innerHTML = `
+               <div class="col-span-2 text-center py-8">
+                   <p class="text-slate-400">Failed to load opportunities. Please try again later.</p>
+               </div>
+           `;
+       } finally {
+           loading.style.display = 'none';
+           container.style.display = 'grid';
+       }
+   }
+   
+   // Refresh button handler
+   document.getElementById('refreshOpportunities').addEventListener('click', loadRecentOpportunities);
+   
+   // Load opportunities on page load
+   document.addEventListener('DOMContentLoaded', loadRecentOpportunities);
+   </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!-- Standardized Sidebar Component -->
+<aside class="fixed right-0 top-0 w-64 h-screen bg-[#0f1622] border-l border-[#1e2d42] overflow-y-auto z-40">
+  <div class="p-6 border-b border-[#1e2d42]">
+    <h1 class="text-2xl font-black bg-gradient-to-br from-[#f1ede6] to-teal-400 bg-clip-text text-transparent">JIRAG</h1>
+    <p class="text-xs text-slate-500 mono mt-1">Career Platform</p>
+  </div>
+  <nav class="p-4 space-y-2">
+    <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all">
+      <span class="text-lg">📊</span>
+      <span class="font-semibold">Dashboard</span>
+    </a>
+    <a href="/search" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all">
+      <span class="text-lg">🔍</span>
+      <span class="font-semibold">Job Search</span>
+    </a>
+    <a href="/agent" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all">
+      <span class="text-lg">🤖</span>
+      <span class="font-semibold">AI Agent</span>
+    </a>
+    <a href="/prediction" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all">
+      <span class="text-lg">🎯</span>
+      <span class="font-semibold">Career Prediction</span>
+    </a>
+    <a href="/notifications" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all relative">
+      <span class="text-lg">🔔</span>
+      <span class="font-semibold">Notifications</span>
+      <span class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center bg-red-500 rounded-full text-xs font-bold text-white">3</span>
+    </a>
+  </nav>
+  
+  <!-- Source Settings -->
+  <div class="p-4 border-t border-[#1e2d42] mt-auto">
+    <p class="text-xs text-slate-500 mono mb-3">Active Sources</p>
+    <div class="space-y-2 text-xs">
+      <label class="flex items-center gap-2 cursor-pointer hover:text-teal-400 transition-colors">
+        <input type="checkbox" checked class="w-4 h-4"> <span>🔗 LinkedIn</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer hover:text-teal-400 transition-colors">
+        <input type="checkbox" checked class="w-4 h-4"> <span>🏢 Companies</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer hover:text-teal-400 transition-colors">
+        <input type="checkbox" checked class="w-4 h-4"> <span>📚 ITI/NTI</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer hover:text-teal-400 transition-colors">
+        <input type="checkbox" checked class="w-4 h-4"> <span>👥 Facebook Groups</span>
+      </label>
+    </div>
+  </div>
+</aside>

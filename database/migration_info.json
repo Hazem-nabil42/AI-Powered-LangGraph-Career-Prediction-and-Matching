@@ -1,0 +1,13 @@
+{
+  "migration_date": "2026-04-27 17:24:33",
+  "source": "Chroma DB (local)",
+  "destination": "Pinecone (jobs-rag-egypt)",
+  "embedding_model": "paraphrase-multilingual-MiniLM-L12-v2",
+  "embedding_dimension": 384,
+  "api_endpoint": "https://api.pinecone.io",
+  "setup_instructions": {
+    "1_get_api_key": "Visit https://app.pinecone.io to get your API key",
+    "2_set_env": "Add PINECONE_API_KEY to your .env file",
+    "3_update_retriever": "Import and use PineconeRetriever instead of ChromaDB"
+  }
+}
