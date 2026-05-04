@@ -21,6 +21,8 @@ from prediction.prediction_routes import router as prediction_router
 from agents.agent_routes import router as agent_router
 from notification_engine.notification_routes import router as notification_router
 
+#n8n requests
+import requests
 
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -79,7 +81,8 @@ async def get_recent_opportunities(limit: int = 8):
                 "job_type": job.get('job_type', 'N/A'),
                 "posted": job.get('posted', 'Recently'),
                 "url": job.get('url', '#'),
-                "source": job.get('source', 'unknown')
+                "source": job.get('source', 'wuzzuf'),
+                "match": int(r.get('score', 0) * 100) if r.get('score') else 85
             })
         
         return {"opportunities": opportunities, "count": len(opportunities)}
@@ -90,23 +93,28 @@ async def get_recent_opportunities(limit: int = 8):
 async def get_dashboard_stats():
     """Get dashboard statistics"""
     try:
-        # Get recent opportunities
-        recent = hybrid_search("job opportunities", n_results=50)
+        # Get recent opportunities to aggregate stats
+        recent = hybrid_search("job opportunities technical developers engineers", n_results=50)
         
         total_opportunities = len(recent)
         sources = set()
+        source_counts = {}
         for r in recent:
             job = r['job']
-            sources.add(job.get('source', 'unknown'))
-        
+            src = job.get('source', 'wuzzuf')
+            sources.add(src)
+            source_counts[src] = source_counts.get(src, 0) + 1
+            
+        # Mock some profile strength stats for the dashboard demo, but realistic job counts
         return {
             "totalOpportunities": total_opportunities,
-            "newThisWeek": max(1, int(total_opportunities * 0.2)),
-            "applicationsActive": 3,
+            "newThisWeek": max(1, int(total_opportunities * 0.4)), # estimate
+            "applicationsActive": 5,
             "interviewsScheduled": 1,
             "activeSources": len(sources),
             "profileScore": 82,
-            "freshJobs": total_opportunities
+            "freshJobs": total_opportunities,
+            "sourceDistribution": [{"label": k, "value": v} for k, v in source_counts.items()]
         }
     except Exception as e:
         return {"error": str(e)}
@@ -119,7 +127,7 @@ async def cv_match(file: UploadFile = File(...)):
     pdf_bytes = await file.read()
 
     # جيب الـ matches
-    matches, skills_profile = match_cv_to_jobs(pdf_bytes, n_results=5)
+    matches, skills_profile = await match_cv_to_jobs(pdf_bytes, n_results=5)
 
     if not matches:
         return {"error": "مش قادر أقرأ الـ CV"}
@@ -186,3 +194,37 @@ async def prediction_page():
 @app.get("/notifications")
 async def notifications_page():
     return FileResponse("src/pages/notifications.html")
+
+
+# n8n 
+
+def trigger_n8n_webhook(job_details):
+    # ده الـ Test URL اللي انت أخدته من n8n
+    webhook_url = "http://localhost:5678/webhook-test/job-alert"
+    
+    # تفاصيل الوظيفة اللي هتبعتها للواتساب أو التليجرام
+    payload = {
+        "title": job_details.get("title", "Unknown Job"),
+        "company": job_details.get("company", "Unknown Company"),
+        "url": job_details.get("url", "https://linkedin.com")
+    }
+    
+    try:
+        response = requests.post(webhook_url, json=payload)
+        if response.status_code == 200:
+            print("✅ Webhook triggered successfully!")
+        else:
+            print(f"❌ Failed to push to n8n {response.text}")
+    except Exception as e:
+        print(f"❌ Connection error to n8n: {e}")
+
+
+@app.get("/api/test-n8n")
+def test_n8n_integration():
+    test_job = {
+        "title": "Senior Python Developer",
+        "company": "Tech Valley",
+        "url": "https://wuzzuf.net/jobs/123"
+    }
+    trigger_n8n_webhook(test_job)
+    return {"status": "Test sent to n8n!"}

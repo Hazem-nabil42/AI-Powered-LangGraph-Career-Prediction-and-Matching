@@ -7,6 +7,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv 
 # fresh jobs date filter
 from datetime import datetime, timedelta
+# dates parsing
+import re
+# live scrapping
+from scraper.live_scraper import live_search_async, add_to_db
 
 load_dotenv() 
 
@@ -37,28 +41,67 @@ else:
     collection = db_client.get_collection("jobs")
     use_pinecone = False 
 
+# Helper function to parse "posted date" strings into actual dates
+def parse_posted_date(posted_str):
+    """
+    تحول النص زي '1 month ago' إلى تاريخ فعلي.
+    """
+    today = datetime.now()
+    match = re.match(r'(\d+)\s+(day|days|month|months|year|years)\s+ago', posted_str)
+    if match:
+        value = int(match.group(1))
+        unit = match.group(2)
+        if 'day' in unit:
+            return today - timedelta(days=value)
+        elif 'month' in unit:
+            return today - timedelta(days=30 * value)
+        elif 'year' in unit:
+            return today - timedelta(days=365 * value)
+    return None
+
 # Fresh and open jobs filter
 def is_recent_and_open(job):
+    """فلترة الوظائف: افتح فقط والحديثة (آخر أسبوعين)"""
     status = job.get('status', '').lower()
-    posted_date_str = job.get('posted_date', '')
+    posted_str = job.get('posted', '')
     
-    if status != 'open':
+    # تحقق من الحالة أولاً
+    if status and status != 'open':
         return False
     
-    if posted_date_str:
-        posted_date = datetime.strptime(posted_date_str, "%Y-%m-%d")
-        today = datetime.now()
-        if (today - posted_date) <= timedelta(days=14):  # فقط من آخر أسبوعين
-            return True
+    if posted_str:
+        # محاولة parse الصيغة "X days/months ago"
+        posted_date = parse_posted_date(posted_str)
+        if posted_date:
+            today = datetime.now()
+            if (today - posted_date) <= timedelta(days=30):  # آخر أسبوعين
+                return True
+        # محاولة parse الصيغة YYYY-MM-DD
+        try:
+            posted_date = datetime.strptime(posted_str, "%Y-%m-%d")
+            today = datetime.now()
+            if (today - posted_date) <= timedelta(days=30):
+                return True
+        except:
+            pass
     return False
 
 def extract_text_from_pdf(pdf_bytes): 
     """Extracts text from uploaded PDF bytes."""
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf") 
-    text = "" 
-    for page in doc: 
-        text += page.get_text() 
-    return text.strip() 
+    try:
+        if not pdf_bytes:
+            return None
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf") 
+        if doc.page_count == 0:
+            return None
+        text = "" 
+        for page in doc: 
+            text += page.get_text() 
+        doc.close()
+        return text.strip() if text.strip() else None
+    except Exception as e:
+        print(f"❌ PDF extraction error: {e}")
+        return None 
 
 def extract_skills_from_cv(cv_text): 
     """
@@ -100,12 +143,29 @@ CV:
     print(f"📋 Extracted profile:\n{extracted}\n")
     return extracted
 
-
+# تحويل المسافة إلى درجة مطابقة (0-100)
 def distance_to_score(distance):
     return round(math.exp(-distance / 10) * 100, 1)
 
 
-def match_cv_to_jobs(pdf_bytes, n_results=5):
+def build_search_query(skills_profile: str) -> str:
+    # استخرج Job Title
+    title_match = re.search(r'Job Title:\s*(.*)', skills_profile)
+    title = title_match.group(1) if title_match else ""
+
+    # استخرج Skills
+    skills_match = re.search(r'Skills:\s*(.*)', skills_profile)
+    skills = skills_match.group(1) if skills_match else ""
+
+    # خد أهم 5 skills بس
+    skills_list = [s.strip() for s in skills.split(",")][:5]
+
+    query = f"{title} {' '.join(skills_list)}"
+    
+    return query.strip()
+
+# Main CV matching function
+async def match_cv_to_jobs(pdf_bytes, n_results=5):
     # ── 1. استخرج النص ──
     cv_text = extract_text_from_pdf(pdf_bytes)
     if not cv_text:
@@ -147,8 +207,10 @@ def match_cv_to_jobs(pdf_bytes, n_results=5):
     print(f"Raw distances: {[round(d,2) for d in distances]}")
 
     # ── 5. احسب الـ scores ──
-    matches = [m for m in matches if is_recent_and_open(m)]
+    matches = []
     for i, metadata in enumerate(metadatas):
+        # تحويل المسافة إلى درجة مطابقة (0-100)
+        score = distance_to_score(distances[i]) if i < len(distances) else 0
         matches.append({
             "title":      metadata.get("title", "N/A"),
             "company":    metadata.get("company", "N/A"),
@@ -158,10 +220,48 @@ def match_cv_to_jobs(pdf_bytes, n_results=5):
             "job_type":   metadata.get("job_type", "N/A"),
             "url":        metadata.get("url", "#"),
             "source":     metadata.get("source", "wuzzuf"),
-            "match":      distance_to_score(distances[i])
+            "posted":     metadata.get("posted", None),
+            "match":      score  # إضافة درجة المطابقة
         })
 
-    # ── 6. normalize الـ scores بين 60% و 99% ──
+
+    # ── 6. فلترة النتائج بعد الحسابات ──
+    matches = [m for m in matches if is_recent_and_open(m)]
+
+    print(f"Number of matches after filter: {len(matches)}")
+
+    # فلترة الوظائف بناءً على إن كانت موجودة (posted) أم لا
+    if not matches:
+        from scraper.live_scraper import live_search_async, add_to_db
+        import asyncio
+        print("⚡️ Live scraping...")
+
+        # نفذ الـ live scraping بناءً على نفس query الـ CV
+        query = build_search_query(skills_profile)
+        print(f"🔍 Search Query: {query}")
+
+        live_jobs = await live_search_async(query)  # أو ممكن تعدل بناءً على الـ query نفسه
+        
+        if live_jobs:
+            add_to_db(live_jobs)  # احفظهم في الـ DB
+            # حوّل النتائج الجديدة إلى نفس الشكل
+            matches = []
+            for job in live_jobs[:n_results]:
+                matches.append({
+                    "title":      job.get("title", "N/A"),
+                    "company":    job.get("company", "N/A"),
+                    "location":   job.get("location", "N/A"),
+                    "experience": job.get("experience", "N/A"),
+                    "level":      job.get("level", "N/A"),
+                    "job_type":   job.get("job_type", "N/A"),
+                    "url":        job.get("url", "#"),
+                    "source":     job.get("source", "live"),
+                    "posted":     job.get("posted", None),
+                    "match":      85.0  # درجة عالية للوظائف الحديثة من live scraping
+                })
+            print(f"✅ Live scraping got {len(matches)} jobs")
+
+    # ── 7. normalize الـ scores بين 60% و 99% ──
     # عشان الـ scores تبان منطقية للمستخدم
     if matches:
         max_score = max(m['match'] for m in matches)

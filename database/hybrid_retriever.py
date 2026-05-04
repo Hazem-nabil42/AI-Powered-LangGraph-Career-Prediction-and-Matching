@@ -2,9 +2,16 @@
 
 import chromadb
 import pickle
-from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+try:
+    from sentence_transformers import SentenceTransformer
+    model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+    HAS_SENTENCE_TRANSFORMERS = True
+except ImportError:
+    HAS_SENTENCE_TRANSFORMERS = False
+    print("⚠️  sentence_transformers not available, vector search disabled")
+    model = None
+
 client = chromadb.PersistentClient(path="database/chroma_db")
 collection = client.get_collection("jobs")
 
@@ -15,6 +22,10 @@ with open("database/bm25_index.pkl", "rb") as f:
 
 
 def hybrid_search(query, n_results=15):
+    if not HAS_SENTENCE_TRANSFORMERS:
+        print(f"⚠️  Vector search disabled, returning empty results")
+        return []
+        
     print(f"\n🔍 Query: '{query}'")
     print("=" * 50)
 
@@ -74,8 +85,44 @@ def hybrid_search(query, n_results=15):
         if len(top_results) == n_results:
             break
 
-    # ── 5. اعرض النتايج ──
-    for i, r in enumerate(top_results):
+    # ── 5. فلترة الوظائف الحديثة والمفتوحة ✅ ──
+    import datetime
+    fresh_results = []
+    
+    for r in top_results:
+        job = r['job']
+        status = job.get('status', '').lower()
+        
+        # فحص الحالة
+        if status and status != 'open':
+            continue
+        
+        # فحص تاريخ النشر
+        posted_date_str = job.get('posted', '')
+        keep_job = True
+        
+        if posted_date_str:
+            try:
+                for date_format in ["%Y-%m-%d", "%d-%m-%Y", "%m/%d/%Y"]:
+                    try:
+                        posted_date = datetime.datetime.strptime(posted_date_str, date_format).date()
+                        today = datetime.date.today()
+                        delta_days = (today - posted_date).days
+                        
+                        # خلال آخر 14 يوم فقط
+                        if delta_days > 14:
+                            keep_job = False
+                        break
+                    except ValueError:
+                        continue
+            except Exception:
+                pass  # بدون تاريخ = حديثة
+        
+        if keep_job:
+            fresh_results.append(r)
+    
+    # ── 6. اعرض النتايج ──
+    for i, r in enumerate(fresh_results):
         job = r['job']
         print(f"\n#{i+1} (score: {r['score']})")
         print(f"  Title:      {job['title']}")
@@ -87,7 +134,7 @@ def hybrid_search(query, n_results=15):
         source = job.get('source', 'wuzzuf')
         print(f"  Source:     {source}")
 
-    return top_results
+    return fresh_results
 
 
 if __name__ == "__main__":

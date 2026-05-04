@@ -4,281 +4,377 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Career Prediction - JIRAG</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/css/sidebar.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/src/css/shared.css">
+  <link rel="stylesheet" href="/src/css/sidebar.css">
   <link rel="stylesheet" href="/src/css/output.css">
   <style>
-    body { font-family: 'Cairo', sans-serif; }
-    .mono { font-family: 'Space Mono', monospace; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
+    :root {
+      --bg: #080e1a;
+      --surface: #0d1627;
+      --surface2: #111d30;
+      --border: #1a2a40;
+      --teal: #2dd4bf;
+      --cyan: #06b6d4;
+      --text: #e8e2d9;
+      --muted: #5a7090;
     }
-    .fade-up { animation: fadeUp 0.4s ease both; }
-    .progress-bar {
-      height: 6px;
-      background: #1e2d42;
-      border-radius: 999px;
-      overflow: hidden;
+
+
+    /* Ambient background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 20%, rgba(45,212,191,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(6,182,212,0.05) 0%, transparent 60%);
     }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #2dd4bf, #06b6d4);
-      transition: width 0.3s ease;
+
+    /* Sidebar */
+    
+
+    /* Cards */
+    .card {
+      background: rgba(13,22,39,0.8);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
     }
-    .question-card {
-      transition: all 0.3s ease;
+    .card-glow { border-color: rgba(45,212,191,0.25); box-shadow: 0 0 40px rgba(45,212,191,0.06); }
+
+    /* Option buttons */
+    .option-btn {
+      width: 100%; padding: 14px 18px; border-radius: 14px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.02);
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+      cursor: pointer; text-align: left; transition: all 0.2s;
+      display: flex; align-items: center; gap: 12px;
     }
+    .option-btn:hover { border-color: rgba(45,212,191,0.4); background: rgba(45,212,191,0.05); transform: translateX(3px); }
+    .option-btn.selected { border-color: var(--teal); background: rgba(45,212,191,0.1); color: var(--teal); }
+    .option-letter { width: 28px; height: 28px; border-radius: 8px; background: var(--border); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; flex-shrink: 0; transition: all 0.2s; }
+    .option-btn.selected .option-letter { background: var(--teal); color: #080e1a; }
+
+    /* Progress */
+    .progress-track { height: 4px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--cyan)); border-radius: 999px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+
+    /* Skill tag */
+    .skill-tag { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; transition: border-color 0.2s; }
+    .skill-tag:hover { border-color: rgba(45,212,191,0.3); }
+
+    /* Match bar */
+    .match-track { height: 5px; background: var(--border); border-radius: 999px; flex: 1; overflow: hidden; }
+    .match-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--cyan)); border-radius: 999px; }
+
+    /* Animations */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes scaleIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+    @keyframes shimmer { 0%,100% { opacity:0.6; } 50% { opacity:1; } }
+    .fade-up { animation: fadeUp 0.45s cubic-bezier(0.4,0,0.2,1) both; }
+    .scale-in { animation: scaleIn 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+    .stagger-1 { animation-delay: 0.05s; }
+    .stagger-2 { animation-delay: 0.1s; }
+    .stagger-3 { animation-delay: 0.15s; }
+    .pulse-dot { width:8px; height:8px; border-radius:50%; background:var(--teal); animation: shimmer 2s ease-in-out infinite; }
+
+    /* Feature cards */
+    .feature-card { padding: 24px; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); text-align: center; transition: all 0.3s; }
+    .feature-card:hover { border-color: rgba(45,212,191,0.2); transform: translateY(-3px); }
+
+    /* Buttons */
+    .btn-primary { background: var(--teal); color: #080e1a; font-family: 'Syne', sans-serif; font-weight: 700; padding: 13px 28px; border-radius: 12px; border: none; cursor: pointer; font-size: 15px; transition: all 0.2s; }
+    .btn-primary:hover { background: #5eead4; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(45,212,191,0.2); }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-ghost { background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-weight: 500; padding: 13px 22px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; font-size: 15px; transition: all 0.2s; }
+    .btn-ghost:hover { border-color: rgba(45,212,191,0.4); color: var(--teal); }
+
+    /* Alt career card */
+    .alt-card { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 14px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); transition: all 0.25s; }
+    .alt-card:hover { border-color: rgba(45,212,191,0.25); transform: translateX(4px); }
   </style>
 </head>
+<body>
 
-<body class="bg-[#0b1120] text-[#f1ede6] min-h-screen">
-
-  <!-- ── Sidebar -->
-  <!-- Include standardized sidebar -->
-  <aside class="fixed right-0 top-0 w-64 h-screen bg-[#0f1622] border-l border-[#1e2d42] overflow-y-auto z-40">
-    <div class="p-6 border-b border-[#1e2d42]">
-      <h1 class="text-2xl font-black bg-gradient-to-br from-[#f1ede6] to-teal-400 bg-clip-text text-transparent">JIRAG</h1>
-      <p class="text-xs text-slate-500 mono mt-1">Career Platform</p>
+  <!-- Sidebar -->
+  <aside>
+    <div class="sidebar-logo">
+      <div class="logo-mark">JIRAG</div>
+      <!-- <div class="logo-sub">Career Copilot · v2.0</div> -->
     </div>
-    <nav class="p-4 space-y-2">
-      <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all">
-        <span class="text-lg">📊</span>
-        <span class="font-semibold">Dashboard</span>
+
+    <nav>
+      <div class="nav-section-label">Main</div>
+
+      <a href="/" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
       </a>
-      <a href="/search" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all">
-        <span class="text-lg">🔍</span>
-        <span class="font-semibold">Job Search</span>
+      <a href="/search" class="nav-item">
+        <span class="nav-icon">🔍</span>
+        <span>Job Search</span>
       </a>
-      <a href="/agent" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all">
-        <span class="text-lg">🤖</span>
-        <span class="font-semibold">AI Agent</span>
+      <a href="/agent" class="nav-item">
+        <span class="nav-icon">🤖</span>
+        <span>AI Agent</span>
       </a>
-      <a href="/prediction" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-400/10 border border-teal-400/20 text-teal-400 transition-all">
-        <span class="text-lg">🎯</span>
-        <span class="font-semibold">Career Prediction</span>
+
+      <div class="nav-section-label" style="margin-top:12px">Insights</div>
+
+      <a href="/prediction" class="nav-item active">
+        <span class="nav-icon">🎯</span>
+        <span>Career Prediction</span>
       </a>
-      <a href="/notifications" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#1e2d42] text-slate-400 hover:text-[#f1ede6] transition-all relative">
-        <span class="text-lg">🔔</span>
-        <span class="font-semibold">Notifications</span>
-        <span class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center bg-red-500 rounded-full text-xs font-bold text-white">3</span>
+      <a href="/notifications" class="nav-item">
+        <span class="nav-icon">🔔</span>
+        <span>Notifications</span>
+        <span class="badge">3</span>
       </a>
     </nav>
-    
-    <!-- Source Settings -->
-    <div class="p-4 border-t border-[#1e2d42] mt-auto">
-      <p class="text-xs text-slate-500 mono mb-3">Active Sources</p>
-      <div class="space-y-2 text-xs">
-        <label class="flex items-center gap-2 cursor-pointer hover:text-teal-400 transition-colors">
-          <input type="checkbox" checked class="w-4 h-4"> <span>🔗 LinkedIn</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer hover:text-teal-400 transition-colors">
-          <input type="checkbox" checked class="w-4 h-4"> <span>🏢 Companies</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer hover:text-teal-400 transition-colors">
-          <input type="checkbox" checked class="w-4 h-4"> <span>📚 ITI/NTI</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer hover:text-teal-400 transition-colors">
-          <input type="checkbox" checked class="w-4 h-4"> <span>👥 Facebook Groups</span>
-        </label>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar"></div>
+        <div class="user-info">
+          <!-- <div class="name">Ahmed Hassan</div> -->
+          <div class="role">Agentic AI Engineer</div>
+        </div>
+        <span style="color:var(--muted); font-size:18px; margin-right:auto;">⚙️</span>
       </div>
     </div>
   </aside>
 
-  <!-- ── Main Content ── -->
-  <main class="mr-64 min-h-screen p-8">
-    <div class="max-w-4xl mx-auto">
+  <!-- Main -->
+  <main style="margin-left: 220px; padding: 40px 48px; position: relative; z-index: 1;">
+    <div style="max-width: 760px; margin: 0 auto;">
+
       <!-- Header -->
-      <div class="mb-10">
-        <h1 class="text-4xl font-bold mb-3 flex items-center gap-3">
-          <span class="text-5xl">🎯</span> Career Preference Prediction
+      <div class="fade-up" style="margin-bottom: 40px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div class="pulse-dot"></div>
+          <span class="mono" style="font-size:11px; color:var(--muted); letter-spacing:2px; text-transform:uppercase;">AI Career Analysis</span>
+        </div>
+        <h1 class="display" style="font-size:36px; font-weight:800; line-height:1.1; margin-bottom:8px;">
+          Career Preference<br><span style="color:var(--teal);">Prediction</span>
         </h1>
-        <p class="text-slate-400 text-lg">Discover your ideal career path through an intelligent classification quiz</p>
+        <p style="color:var(--muted); font-size:16px;">Intelligent classification to surface your ideal career path.</p>
       </div>
 
-      <!-- Progress -->
-      <div class="mb-8" id="progressContainer" style="display: none;">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-sm text-slate-400 mono">Question <span id="currentQuestion">1</span> of 12</span>
-          <span id="progressPercent" class="text-sm text-teal-400 font-bold mono">0%</span>
+      <!-- Progress (hidden initially) -->
+      <div id="progressContainer" style="display:none; margin-bottom:28px;" class="fade-up">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span class="mono" style="font-size:12px; color:var(--muted);">Question <span id="currentQuestion">1</span> of 12</span>
+          <span class="mono" style="font-size:12px; color:var(--teal); font-weight:700;" id="progressPercent">0%</span>
         </div>
-        <div class="progress-bar">
-          <div id="progressFill" class="progress-fill" style="width: 0%"></div>
-        </div>
+        <div class="progress-track"><div id="progressFill" class="progress-fill" style="width:0%"></div></div>
       </div>
 
       <!-- Question Card -->
-      <div id="questionCard" class="bg-[#161f30] border border-[#1e2d42] rounded-2xl p-8 mb-6 question-card fade-up">
-        <div class="mb-8">
-          <h2 id="questionText" class="text-2xl font-bold leading-relaxed">
-            What aspect of work is most important to you?
-          </h2>
-          <p id="questionSubtext" class="text-slate-400 text-sm mt-2"></p>
-        </div>
-
-        <!-- Options -->
-        <div id="optionsContainer" class="space-y-3 mb-8">
-          <!-- Options will be inserted here -->
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-3 justify-between">
-          <button onclick="previousQuestion()" id="prevBtn" class="px-6 py-3 rounded-xl border border-[#1e2d42] text-slate-400 hover:border-teal-400 hover:text-teal-400 transition-all font-semibold" style="display: none;">
-            ← Previous
-          </button>
-          <button onclick="nextQuestion()" id="nextBtn" class="px-6 py-3 rounded-xl bg-teal-400 text-[#0b1120] hover:bg-teal-500 transition-all font-bold ml-auto" disabled>
-            Next →
-          </button>
-        </div>
-      </div>
-
-      <!-- Results Section (Hidden by default) -->
-      <div id="resultsSection" style="display: none;">
-        <div class="text-center mb-8">
-          <div class="text-7xl mb-4">✨</div>
-          <h2 class="text-3xl font-bold mb-2">Your Career Profile</h2>
-          <p class="text-slate-400">Based on your responses, here are your ideal career paths:</p>
-        </div>
-
-        <!-- Main Result Card -->
-        <div class="bg-gradient-to-br from-teal-400/20 via-[#161f30] to-[#0f1622] border border-teal-400/30 rounded-2xl p-8 mb-6">
-          <div class="flex items-center justify-between mb-6">
-            <div>
-              <h3 id="primaryCareer" class="text-3xl font-bold mb-2">Software Development</h3>
-              <p id="careerDesc" class="text-slate-300 text-lg">Build innovative solutions and solve complex problems</p>
-            </div>
-            <div class="text-6xl">💻</div>
-          </div>
-          <div class="w-full bg-[#1e2d42] rounded-full h-3">
-            <div id="confidenceBar" class="h-3 bg-gradient-to-r from-teal-400 to-cyan-500 rounded-full" style="width: 92%"></div>
-          </div>
-          <p class="text-sm text-slate-400 mt-2 mono">92% Match Score</p>
-        </div>
-
-        <!-- Alternative Careers -->
-        <div class="mb-6">
-          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-            <span>🎯</span> Alternative Paths
-          </h3>
-          <div class="space-y-3">
-            <div class="bg-[#161f30] border border-[#1e2d42] rounded-2xl p-5 hover:border-teal-400/30 transition-all">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                  <span class="text-3xl">📊</span>
-                  <div>
-                    <h4 class="font-bold">Data Science</h4>
-                    <p class="text-sm text-slate-400">Analyze and extract insights from data</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="font-bold text-teal-400">85%</p>
-                  <p class="text-xs text-slate-400">Match</p>
-                </div>
-              </div>
-            </div>
-            <div class="bg-[#161f30] border border-[#1e2d42] rounded-2xl p-5 hover:border-teal-400/30 transition-all">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                  <span class="text-3xl">🎨</span>
-                  <div>
-                    <h4 class="font-bold">UX/UI Design</h4>
-                    <p class="text-sm text-slate-400">Create beautiful user experiences</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="font-bold text-teal-400">78%</p>
-                  <p class="text-xs text-slate-400">Match</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Skills Recommendation -->
-        <div class="bg-[#161f30] border border-[#1e2d42] rounded-2xl p-6 mb-6">
-          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-            <span>🛠️</span> Recommended Skills to Develop
-          </h3>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg">
-              <span class="text-2xl">🐍</span>
-              <div>
-                <p class="font-semibold">Python</p>
-                <p class="text-xs text-slate-400">90% Demand</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg">
-              <span class="text-2xl">📡</span>
-              <div>
-                <p class="font-semibold">APIs & Databases</p>
-                <p class="text-xs text-slate-400">88% Demand</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg">
-              <span class="text-2xl">☁️</span>
-              <div>
-                <p class="font-semibold">Cloud (AWS/GCP)</p>
-                <p class="text-xs text-slate-400">85% Demand</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg">
-              <span class="text-2xl">🔄</span>
-              <div>
-                <p class="font-semibold">DevOps/CI-CD</p>
-                <p class="text-xs text-slate-400">82% Demand</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CTA -->
-        <div class="flex gap-3">
-          <button onclick="goToAgent()" class="flex-1 px-6 py-4 rounded-xl bg-teal-400 text-[#0b1120] hover:bg-teal-500 transition-all font-bold text-lg">
-            🤖 Chat with AI Agent
-          </button>
-          <button onclick="startQuiz()" class="px-6 py-4 rounded-xl border border-[#1e2d42] text-slate-400 hover:border-teal-400 hover:text-teal-400 transition-all font-semibold">
-            ↺ Retake Quiz
-          </button>
+      <div id="questionCard" class="card fade-up" style="padding:36px; margin-bottom:20px; display:none;">
+        <p class="mono" id="questionMeta" style="font-size:11px; color:var(--teal); letter-spacing:1px; margin-bottom:16px; opacity:0.8;">QUESTION 01</p>
+        <h2 id="questionText" class="display" style="font-size:22px; font-weight:700; line-height:1.4; margin-bottom:28px;"></h2>
+        <div id="optionsContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:28px;"></div>
+        <div style="display:flex; gap:12px; justify-content:space-between;">
+          <button onclick="previousQuestion()" id="prevBtn" class="btn-ghost" style="display:none;">← Back</button>
+          <button onclick="nextQuestion()" id="nextBtn" class="btn-primary" style="margin-left:auto;" disabled>Continue →</button>
         </div>
       </div>
 
       <!-- Initial State -->
-      <div id="initialState" class="text-center">
-        <div class="bg-[#161f30] border border-[#1e2d42] rounded-2xl p-10 mb-6">
-          <div class="text-6xl mb-6">🚀</div>
-          <h2 class="text-2xl font-bold mb-3">Ready to discover your ideal career?</h2>
-          <p class="text-slate-400 mb-6 max-w-lg mx-auto">
-            This AI-powered career prediction quiz will analyze your preferences, skills, and goals to suggest the best career paths for you. It takes about 5-10 minutes.
+      <div id="initialState">
+        <div class="card card-glow fade-up" style="padding:48px; text-align:center; margin-bottom:24px;">
+          <div style="font-size:56px; margin-bottom:20px; line-height:1;">🚀</div>
+          <h2 class="display" style="font-size:26px; font-weight:800; margin-bottom:12px;">Ready to find your path?</h2>
+          <p style="color:var(--muted); max-width:440px; margin:0 auto 28px; line-height:1.7; font-size:15px;">
+            Answer 12 quick questions. Our AI analyzes your preferences, skills, and goals to map your ideal career trajectory.
           </p>
-          <button onclick="startQuiz()" class="px-8 py-4 rounded-xl bg-teal-400 text-[#0b1120] hover:bg-teal-500 transition-all font-bold text-lg">
-            Start Prediction Quiz
-          </button>
+          <button onclick="startQuiz()" class="btn-primary" style="font-size:16px; padding:15px 36px;">Start Prediction Quiz →</button>
+          <p class="mono" style="font-size:11px; color:var(--muted); margin-top:16px;">≈ 5 minutes · Personalized results</p>
         </div>
 
-        <!-- Features -->
-        <div class="grid grid-cols-3 gap-4">
-          <div class="text-center">
-            <div class="text-4xl mb-3">🎯</div>
-            <h3 class="font-bold mb-1">Accurate Matching</h3>
-            <p class="text-sm text-slate-400">AI-powered career recommendations</p>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;" class="fade-up stagger-1">
+          <div class="feature-card">
+            <div style="font-size:32px; margin-bottom:12px;">🎯</div>
+            <p class="display" style="font-weight:700; margin-bottom:6px; font-size:14px;">Accurate Match</p>
+            <p style="font-size:13px; color:var(--muted); line-height:1.5;">AI-powered career recommendations</p>
           </div>
-          <div class="text-center">
-            <div class="text-4xl mb-3">📈</div>
-            <h3 class="font-bold mb-1">Skill Insights</h3>
-            <p class="text-sm text-slate-400">Learn what skills you need</p>
+          <div class="feature-card">
+            <div style="font-size:32px; margin-bottom:12px;">📈</div>
+            <p class="display" style="font-weight:700; margin-bottom:6px; font-size:14px;">Skill Insights</p>
+            <p style="font-size:13px; color:var(--muted); line-height:1.5;">Learn what skills you need to grow</p>
           </div>
-          <div class="text-center">
-            <div class="text-4xl mb-3">🌟</div>
-            <h3 class="font-bold mb-1">Personalized Path</h3>
-            <p class="text-sm text-slate-400">Get your customized roadmap</p>
+          <div class="feature-card">
+            <div style="font-size:32px; margin-bottom:12px;">🌟</div>
+            <p class="display" style="font-weight:700; margin-bottom:6px; font-size:14px;">Your Roadmap</p>
+            <p style="font-size:13px; color:var(--muted); line-height:1.5;">Get a customized career roadmap</p>
           </div>
         </div>
       </div>
+
+      <!-- Results -->
+      <div id="resultsSection" style="display:none;">
+        <!-- Hero result -->
+        <div class="card card-glow scale-in" style="padding:36px; margin-bottom:20px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:radial-gradient(circle, rgba(45,212,191,0.12) 0%, transparent 70%); pointer-events:none;"></div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
+            <div>
+              <p class="mono" style="font-size:11px; color:var(--teal); letter-spacing:2px; margin-bottom:8px;">PRIMARY MATCH</p>
+              <h3 id="primaryCareer" class="display" style="font-size:30px; font-weight:800; margin-bottom:8px;">Software Development</h3>
+              <p id="careerDesc" style="color:var(--muted); font-size:15px; line-height:1.6; max-width:400px;"></p>
+            </div>
+            <span style="font-size:52px; line-height:1;" id="careerEmoji">💻</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div class="match-track"><div id="confidenceBar" class="match-fill" style="width:92%"></div></div>
+            <span id="confidenceText" class="mono" style="font-size:13px; color:var(--teal); font-weight:700; white-space:nowrap;">92%</span>
+          </div>
+        </div>
+
+        <!-- Alternative paths -->
+        <div class="fade-up stagger-1" style="margin-bottom:20px;">
+          <p class="display" style="font-weight:700; font-size:16px; margin-bottom:14px;">🎯 Alternative Paths</p>
+          <div style="display:flex; flex-direction:column; gap:10px;" id="altCareers">
+            <div class="alt-card">
+              <span style="font-size:28px;">📊</span>
+              <div style="flex:1;">
+                <p style="font-weight:600; margin-bottom:2px;">Data Science</p>
+                <p style="font-size:13px; color:var(--muted);">Analyze and extract insights from data</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-weight:700; color:var(--teal); font-size:15px;">85%</p>
+                <div class="match-track" style="width:80px; margin-top:4px;"><div class="match-fill" style="width:85%"></div></div>
+              </div>
+            </div>
+            <div class="alt-card">
+              <span style="font-size:28px;">🎨</span>
+              <div style="flex:1;">
+                <p style="font-weight:600; margin-bottom:2px;">UX / UI Design</p>
+                <p style="font-size:13px; color:var(--muted);">Create beautiful user experiences</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="font-weight:700; color:var(--teal); font-size:15px;">78%</p>
+                <div class="match-track" style="width:80px; margin-top:4px;"><div class="match-fill" style="width:78%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="card fade-up stagger-2" style="padding:28px; margin-bottom:20px;">
+          <p class="display" style="font-weight:700; font-size:16px; margin-bottom:18px;">🛠️ Skills to Develop</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="skill-tag"><span style="font-size:22px;">🐍</span><div><p style="font-weight:600; font-size:14px;">Python</p><p class="mono" style="font-size:11px; color:var(--teal);">90% Demand</p></div></div>
+            <div class="skill-tag"><span style="font-size:22px;">📡</span><div><p style="font-weight:600; font-size:14px;">APIs & Databases</p><p class="mono" style="font-size:11px; color:var(--teal);">88% Demand</p></div></div>
+            <div class="skill-tag"><span style="font-size:22px;">☁️</span><div><p style="font-weight:600; font-size:14px;">Cloud (AWS/GCP)</p><p class="mono" style="font-size:11px; color:var(--teal);">85% Demand</p></div></div>
+            <div class="skill-tag"><span style="font-size:22px;">🔄</span><div><p style="font-weight:600; font-size:14px;">DevOps / CI-CD</p><p class="mono" style="font-size:11px; color:var(--teal);">82% Demand</p></div></div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div style="display:flex; gap:12px;" class="fade-up stagger-3">
+          <button onclick="goToAgent()" class="btn-primary" style="flex:1; font-size:15px;">🤖 Chat with AI Agent</button>
+          <button onclick="startQuiz()" class="btn-ghost">↺ Retake</button>
+        </div>
+      </div>
+
     </div>
   </main>
 
-  <script src="/src/JS/modules/prediction.js"></script>
+  <script>
+    const questions = [
+      { q: "What type of work excites you most?", sub: "Choose what resonates with you", options: ["Building and coding systems", "Analyzing data for insights", "Designing visual experiences", "Leading and managing teams"] },
+      { q: "How do you prefer to solve problems?", sub: "", options: ["Step-by-step logical reasoning", "Creative brainstorming", "Research and experimentation", "Collaboration with others"] },
+      { q: "What's your ideal work environment?", sub: "", options: ["Remote with deep focus", "Dynamic startup energy", "Corporate structured setting", "Freelance / flexible"] },
+      { q: "Which skills do you already have?", sub: "Pick the closest match", options: ["Programming (any language)", "Design & visual tools", "Data analysis / Excel / SQL", "Communication & project mgmt"] },
+      { q: "What motivates you most at work?", sub: "", options: ["Building something impactful", "Earning well", "Continuous learning", "Helping other people"] },
+      { q: "How do you handle ambiguity?", sub: "", options: ["I thrive in it — love figuring things out", "I prefer clear requirements", "Depends on the situation", "I research until I find clarity"] },
+      { q: "Which field interests you most?", sub: "", options: ["AI / Machine Learning", "Web / Mobile development", "Cybersecurity", "Data Science / Analytics"] },
+      { q: "What's your experience level?", sub: "", options: ["Complete beginner", "Some basics learned", "Intermediate — built projects", "Professional with work experience"] },
+      { q: "How do you prefer to learn?", sub: "", options: ["Video tutorials & courses", "Docs and books", "Building hands-on projects", "Mentorship and community"] },
+      { q: "What's your biggest career goal?", sub: "", options: ["Join a top tech company", "Build my own startup", "Freelance independently", "Contribute to open source / research"] },
+      { q: "How important is work-life balance?", sub: "", options: ["Top priority — I protect my time", "Important but I'm flexible", "I'm okay grinding short-term", "Balance? What balance?"] },
+      { q: "Where do you see yourself in 3 years?", sub: "Be honest with yourself", options: ["Senior engineer at a company", "Founding or co-founding a startup", "Top freelancer in my niche", "Researcher or academic"] },
+    ];
+
+    let current = 0, answers = [];
+    const letters = ['A','B','C','D'];
+
+    function startQuiz() {
+      document.getElementById('initialState').style.display = 'none';
+      document.getElementById('resultsSection').style.display = 'none';
+      document.getElementById('questionCard').style.display = 'block';
+      document.getElementById('progressContainer').style.display = 'block';
+      current = 0; answers = [];
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = questions[current];
+      document.getElementById('questionMeta').textContent = `QUESTION ${String(current+1).padStart(2,'0')}`;
+      document.getElementById('questionText').textContent = q.q;
+      document.getElementById('currentQuestion').textContent = current + 1;
+      const pct = Math.round((current / questions.length) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressPercent').textContent = pct + '%';
+      document.getElementById('prevBtn').style.display = current > 0 ? 'block' : 'none';
+      document.getElementById('nextBtn').disabled = answers[current] === undefined;
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn' + (answers[current] === i ? ' selected' : '');
+        btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+        btn.onclick = () => selectOption(i);
+        container.appendChild(btn);
+      });
+
+      // re-animate card
+      const card = document.getElementById('questionCard');
+      card.style.animation = 'none';
+      card.offsetHeight;
+      card.style.animation = 'fadeUp 0.35s cubic-bezier(0.4,0,0.2,1) both';
+    }
+
+    function selectOption(i) {
+      answers[current] = i;
+      document.querySelectorAll('.option-btn').forEach((b, idx) => {
+        b.classList.toggle('selected', idx === i);
+      });
+      document.getElementById('nextBtn').disabled = false;
+    }
+
+    function nextQuestion() {
+      if (answers[current] === undefined) return;
+      if (current < questions.length - 1) { current++; renderQuestion(); }
+      else showResults();
+    }
+
+    function previousQuestion() {
+      if (current > 0) { current--; renderQuestion(); }
+    }
+
+    function showResults() {
+      document.getElementById('questionCard').style.display = 'none';
+      document.getElementById('progressContainer').style.display = 'none';
+      document.getElementById('resultsSection').style.display = 'block';
+      document.getElementById('progressFill').style.width = '100%';
+      // Simple scoring based on most picked category
+      const careers = [
+        { name:'Software Development', desc:'Build systems, APIs, and full-stack products', emoji:'💻', score:92 },
+        { name:'AI / ML Engineering', desc:'Design intelligent systems with machine learning', emoji:'🤖', score:88 },
+        { name:'Data Science', desc:'Extract insights from complex datasets', emoji:'📊', score:85 },
+      ];
+      const picked = answers.filter(a => a === 0).length >= 3 ? careers[1] : careers[0];
+      document.getElementById('primaryCareer').textContent = picked.name;
+      document.getElementById('careerDesc').textContent = picked.desc;
+      document.getElementById('careerEmoji').textContent = picked.emoji;
+      document.getElementById('confidenceBar').style.width = picked.score + '%';
+      document.getElementById('confidenceText').textContent = picked.score + '% match';
+    }
+
+    function goToAgent() { window.location.href = '/agent'; }
+  </script>
 </body>
 </html>

@@ -108,9 +108,11 @@ class OpportunityAgent:
                     "title": r.get("job", {}).get("title", "N/A"),
                     "company": r.get("job", {}).get("company", "N/A"),
                     "location": r.get("job", {}).get("location", "N/A"),
-                    "description": r.get("job", {}).get("description", "N/A"),
-                    "requirements": r.get("job", {}).get("requirements", "N/A"),
-                    "url": r.get("job", {}).get("url", "N/A"),
+                    "description": r.get("job", {}).get("description", "N/A")[:200],  # Limit to 200 chars
+                    "posted_date": r.get("job", {}).get("posted", "N/A"),
+                    "experience": r.get("job", {}).get("experience", "N/A"),
+                    "salary": r.get("job", {}).get("salary", "Not specified"),
+                    "url": r.get("job", {}).get("url", "#"),
                     "source": r.get("job", {}).get("source", "unknown"),
                     "score": r.get("score", 0)
                 }

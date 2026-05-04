@@ -47,20 +47,25 @@ def format_jobs_for_llm(results):
 def is_job_open(job):
     """تحقق من حالة الوظيفة (Open) وتاريخ نشرها."""
     status = job.get('status', '').lower()
-    posted_date_str = job.get('posted_date', '')
+    posted_date_str = job.get('posted', '')
     
-    if status != 'open':
+    # إذا كانت الحالة محددة، تحقق من أنها "open"
+    if status and status != 'open':
         return False
     
     # نفترض إن posted_date هو في صيغة YYYY-MM-DD
     if posted_date_str:
-        posted_date = datetime.datetime.strptime(posted_date_str, "%Y-%m-%d").date()
-        today = datetime.date.today()
-        # خلي الحد الأقصى أسبوعين
-        delta_days = (today - posted_date).days
-        if delta_days <= 14:  # خلال أسبوعين
+        try:
+            posted_date = datetime.datetime.strptime(posted_date_str, "%Y-%m-%d").date()
+            today = datetime.date.today()
+            # خلي الحد الأقصى أسبوعين
+            delta_days = (today - posted_date).days
+            if delta_days <= 14:  # خلال أسبوعين
+                return True
+        except ValueError:
+            # إذا فشل parsing، اعتبر الوظيفة حديثة (best effort)
             return True
-    return False
+    return True  # إذا لم تكن هناك تاريخ، اعتبرها حديثة
 
 # فلترة النتائج بحيث تكون الوظائف مفتوحة وحديثة
 def filter_fresh_open_jobs(results):
@@ -293,4 +298,4 @@ async def ask_non_stream(user_query):
 if __name__ == "__main__":
     ask_stream("عايز وظيفة python developer في القاهرة")
     print("\n" + "="*60 + "\n")
-    ask_stream("أنا فريش جراد وعايز وظيفة customer service بالانجليزي")
+    #ask_stream("أنا فريش جراد وعايز وظيفة customer service بالانجليزي")

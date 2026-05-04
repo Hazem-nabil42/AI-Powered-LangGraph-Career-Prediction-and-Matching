@@ -1,61 +1,193 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Agent - JIRAG</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/css/sidebar.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/src/css/shared.css">
+  <link rel="stylesheet" href="/src/css/sidebar.css">
   <link rel="stylesheet" href="/src/css/output.css">
   <style>
     :root {
-      --bg: #060c18;
-      --surface: #0d1626;
+      --bg: #080e1a;
+      --surface: #0d1627;
       --surface2: #111d30;
-      --border: #1a2840;
-      --border2: #243350;
+      --border: #1a2a40;
       --teal: #2dd4bf;
-      --teal-dim: rgba(45,212,191,0.12);
-      --teal-glow: rgba(45,212,191,0.25);
-      --text: #eee9e0;
-      --muted: #5a6a82;
-      --orange: #fb923c;
-      --red: #f87171;
-      --green: #4ade80;
+      --cyan: #06b6d4;
+      --text: #e8e2d9;
+      --muted: #4a6070;
     }
-  </style>
-  <style>
-    body { font-family: 'Cairo', sans-serif; }
+
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; }
     .mono { font-family: 'Space Mono', monospace; }
-    .chat-bubble {
-      animation: slideUp 0.3s ease-out;
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 55% 45% at 30% 40%, rgba(45,212,191,0.05) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 35% at 70% 70%, rgba(6,182,212,0.04) 0%, transparent 60%);
     }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+
+    /* ── Sidebar (right side, RTL) ── */
+    
+
+    /* ── Layout ── */
+    .main-layout {
+      margin-right: 220px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative; z-index: 1;
+      padding: 32px;
     }
-    .source-badge {
-      display: inline-flex;
+
+    /* ── Header ── */
+    .agent-header {
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,14,26,0.8);
+      backdrop-filter: blur(12px);
+      display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: rgba(45, 212, 191, 0.1);
-      border: 1px solid rgba(45, 212, 191, 0.2);
+      justify-content: space-between;
+      flex-shrink: 0;
     }
-    .thinking {
-      opacity: 0.7;
-      font-style: italic;
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .agent-avatar {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(45,212,191,0.3), rgba(6,182,212,0.2));
+      border: 1px solid rgba(45,212,191,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
     }
+    .agent-name { font-size: 16px; font-weight: 700; }
+    .agent-status {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(45,212,191,0.1);
+      border: 1px solid rgba(45,212,191,0.2);
+      border-radius: 999px; padding: 4px 12px;
+      font-size: 12px; color: var(--teal); font-weight: 600;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
+
+    .header-right { text-align: left; direction: ltr; }
+    .header-date { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+    .header-insight { font-size: 13px; color: var(--text); }
+    .header-insight span { color: var(--teal); font-weight: 600; }
+
+    /* ── Chat area ── */
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      scroll-behavior: smooth;
+      text-align: left; direction: ltr;
+    }
+    .chat-area::-webkit-scrollbar { width: 4px; }
+    .chat-area::-webkit-scrollbar-track { background: transparent; }
+    .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+
+    /* Empty state */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; }
+    .empty-orb {
+      width: 80px; height: 80px; border-radius: 24px;
+      background: linear-gradient(135deg, rgba(45,212,191,0.25), rgba(6,182,212,0.1));
+      border: 1px solid rgba(45,212,191,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 38px; margin-bottom: 20px;
+      box-shadow: 0 0 40px rgba(45,212,191,0.1);
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .empty-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .empty-sub { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 360px; }
+
+    /* Chips */
+    .chips-row {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      justify-content: center; margin-top: 28px; direction: ltr;
+    }
+    .chip {
+      padding: 10px 16px; border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      cursor: pointer; font-size: 13px; font-family: 'Cairo', sans-serif;
+      color: var(--text); transition: all 0.2s;
+      text-align: center;
+    }
+    .chip:hover { border-color: rgba(45,212,191,0.4); background: rgba(45,212,191,0.06); color: var(--teal); transform: translateY(-2px); }
+    .chip-icon { font-size: 16px; margin-bottom: 3px; display: block; }
+    .chip-title { font-weight: 600; font-size: 13px; margin-bottom: 1px; }
+    .chip-sub { font-size: 11px; color: var(--muted); }
+
+    /* Messages */
+    .msg-row { display: flex; gap: 12px; margin-bottom: 20px; direction: ltr; }
+    .msg-row.user { justify-content: flex-end; }
+    .msg-avatar { width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .msg-avatar.bot { background: linear-gradient(135deg, rgba(45,212,191,0.25), rgba(6,182,212,0.1)); border: 1px solid rgba(45,212,191,0.2); }
+    .msg-avatar.user { background: rgba(255,255,255,0.06); border: 1px solid var(--border); }
+    .msg-bubble {
+      max-width: 70%; padding: 14px 18px; border-radius: 16px;
+      font-size: 14px; line-height: 1.7;
+    }
+    .msg-bubble.bot { background: rgba(13,22,39,0.9); border: 1px solid var(--border); border-top-left-radius: 4px; }
+    .msg-bubble.user { background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.2); border-top-right-radius: 4px; color: var(--text); }
+    .msg-time { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 5px; }
+
+    /* Typing indicator */
+    .typing { display: flex; gap: 4px; align-items: center; padding: 4px 2px; }
+    .typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); opacity: 0.4; animation: typingDot 1.2s ease-in-out infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot { 0%,60%,100% { opacity:0.2; transform:translateY(0); } 30% { opacity:1; transform:translateY(-4px); } }
+
+    /* ── Input bar ── */
+    .input-bar {
+      padding: 16px 32px 24px;
+      flex-shrink: 0;
+    }
+    .input-wrapper {
+      background: rgba(13,22,39,0.9);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 20px;
+      display: flex; align-items: center; gap: 12px;
+      transition: border-color 0.2s;
+    }
+    .input-wrapper:focus-within { border-color: rgba(45,212,191,0.4); box-shadow: 0 0 20px rgba(45,212,191,0.06); }
+    .chat-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text); font-family: 'Cairo', sans-serif; font-size: 14px;
+      resize: none; max-height: 120px; line-height: 1.6;
+      direction: rtl;
+    }
+    .chat-input::placeholder { color: var(--muted); }
+    .input-hint { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); text-align: center; margin-top: 8px; direction: ltr; }
+    .send-btn {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: var(--teal); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; transition: all 0.2s;
+    }
+    .send-btn:hover { background: #5eead4; transform: scale(1.05); box-shadow: 0 4px 16px rgba(45,212,191,0.25); }
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Animations */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+    .fade-up { animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+    .fade-in  { animation: fadeIn 0.3s ease both; }
   </style>
 </head>
-
 <body>
 
-  <!-- ── SIDEBAR ── -->
+  <!-- ── Sidebar (right) ── -->
   <aside>
     <div class="sidebar-logo">
       <div class="logo-mark">JIRAG</div>
@@ -103,113 +235,293 @@
     </div>
   </aside>
 
-  <!-- ── MAIN ── -->
-  <main>
+
+  <!-- ── Main ── -->
+  <div class="main-layout">
 
     <!-- Header -->
-    <div class="page-header">
-      <div>
-        <div class="greeting-sub">Date</div>
-        <!-- <h1 class="greeting-title">Good morning, Ahmed 👋</h1> -->
-        <p class="greeting-desc">Your AI copilot found 12 new opportunities overnight.</p>
-      </div>
-      <div class="header-actions">
-        <div class="status-pill status-live">
-          <span class="dot"></span>
+    <header class="agent-header fade-in">
+      <div class="header-left">
+        <div class="agent-avatar">🤖</div>
+        <div>
+          <div class="agent-name">JIRAG Agent</div>
+          <div style="font-size:12px; color:var(--muted);">LangGraph · Gemini Flash</div>
+        </div>
+        <div class="agent-status">
+          <div class="status-dot"></div>
           Agent Active
         </div>
-        <div class="icon-btn">
-          🔔
-          <span class="notif-dot"></span>
+      </div>
+      <div class="header-right">
+        <div class="header-date mono" id="headerDate">LOADING...</div>
+        <div class="header-insight">AI copilot found <span id="oppCount">12</span> new opportunities overnight</div>
+      </div>
+    </header>
+
+    <!-- Chat area -->
+    <div class="chat-area" id="chatArea">
+      <!-- Empty state -->
+      <div class="empty-state fade-up" id="emptyState">
+        <div class="empty-orb">🤖</div>
+        <h2 class="empty-title">How can I help you today?</h2>
+        <p class="empty-sub">Ask me about jobs, internships, learning paths, or career advice. I search across LinkedIn, Wuzzuf, and more using AI-powered RAG.</p>
+
+        <div class="chips-row">
+          <div class="chip" onclick="sendChip(this)">
+            <span class="chip-icon">💼</span>
+            <div class="chip-title">Python Developer</div>
+            <div class="chip-sub">Entry-level opportunities</div>
+          </div>
+          <div class="chip" onclick="sendChip(this)">
+            <span class="chip-icon">📚</span>
+            <div class="chip-title">Data Analyst</div>
+            <div class="chip-sub">Learn and earn</div>
+          </div>
+          <div class="chip" onclick="sendChip(this)">
+            <span class="chip-icon">🚀</span>
+            <div class="chip-title">Web Developer</div>
+            <div class="chip-sub">Full-stack opportunities</div>
+          </div>
+          <div class="chip" onclick="sendChip(this)">
+            <span class="chip-icon">🤝</span>
+            <div class="chip-title">Mobile Developer</div>
+            <div class="chip-sub">React Native & Flutter</div>
+          </div>
         </div>
-        <div class="avatar" style="width:42px;height:42px;border-radius:12px;font-size:16px;"></div>
+
+        <p class="mono" style="font-size:11px; color:var(--muted); margin-top:24px; direction:ltr;">Shift+Enter for new line · Enter to send</p>
       </div>
     </div>
 
-        <!-- Example Prompts -->
-        <div class="my-6">
-          <p class="text-sm text-slate-500 mono mb-3">Try asking:</p>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="sendMessage('Find me Python developer jobs in Cairo with 0-2 years experience')" 
-              class="text-left p-4 bg-[#161f30] border border-[#1e2d42] hover:border-teal-400 rounded-xl transition-all text-sm">
-              <p class="text-slate-300 font-semibold">💻 Python Developer Jobs</p>
-              <p class="text-slate-500 text-xs mt-1">Find entry-level opportunities</p>
-            </button>
-            <button onclick="sendMessage('Show me internship opportunities for fresh graduates')" 
-              class="text-left p-4 bg-[#161f30] border border-[#1e2d42] hover:border-teal-400 rounded-xl transition-all text-sm">
-              <p class="text-slate-300 font-semibold">🎓 Internships</p>
-              <p class="text-slate-500 text-xs mt-1">Entry-level opportunities</p>
-            </button>
-            <button onclick="sendMessage('Find language learning opportunities and courses')" 
-              class="text-left p-4 bg-[#161f30] border border-[#1e2d42] hover:border-teal-400 rounded-xl transition-all text-sm">
-              <p class="text-slate-300 font-semibold">📚 Learning Paths</p>
-              <p class="text-slate-500 text-xs mt-1">Courses and certifications</p>
-            </button>
-            <button onclick="sendMessage('Show volunteering opportunities in tech')" 
-              class="text-left p-4 bg-[#161f30] border border-[#1e2d42] hover:border-teal-400 rounded-xl transition-all text-sm">
-              <p class="text-slate-300 font-semibold">🤝 Volunteering</p>
-              <p class="text-slate-500 text-xs mt-1">Give back while learning</p>
-            </button>
-          </div>
-        </div>
+    <!-- Input bar -->
+    <div class="input-bar">
+      <div class="input-wrapper">
+        <textarea
+          class="chat-input"
+          id="chatInput"
+          rows="1"
+          placeholder="Search for jobs, internships, or career advice..."
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send">
+          ➤
+        </button>
+      </div>
+      <div class="input-hint">Shift+Enter for new line · Enter to send</div>
+    </div>
 
-        <!-- Agent Thinking -->
-        <div class="chat-bubble" id="thinkingBubble" style="display: none;">
-          <div class="bg-[#161f30]/50 border border-[#1e2d42] rounded-2xl p-5 max-w-2xl">
-            <div class="flex items-center gap-3">
-              <div class="w-3 h-3 bg-teal-400 rounded-full animate-pulse"></div>
-              <p class="text-slate-400 text-sm thinking">Agent is analyzing your request across multiple sources...</p>
-            </div>
-          </div>
-        </div>
+  </div>
 
-        <!-- Response with Sources -->
-        <div class="chat-bubble" id="responseBubble" style="display: none;">
-          <div class="bg-[#161f30] border border-teal-400/20 rounded-2xl p-5 max-w-2xl">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-lg">🤖</span>
-              <span class="mono text-xs text-teal-400">AI Agent Response</span>
-            </div>
+  <script>
+    // Date
+    const now = new Date();
+    document.getElementById('headerDate').textContent =
+      now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' }).toUpperCase();
+
+    let hasMessages = false;
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function handleKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    }
+
+    function sendChip(el) {
+      const title = el.querySelector('.chip-title').textContent;
+      document.getElementById('chatInput').value = title;
+      sendMessage();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text || isWaiting) return;
+      
+      input.value = ''; 
+      autoResize(input);
+      isWaiting = true;
+
+      if (!hasMessages) {
+        document.getElementById('emptyState').style.display = 'none';
+        hasMessages = true;
+      }
+
+      addMessage(text, 'user');
+      addTyping();
+
+      try {
+        // Call the real agent backend
+        const response = await fetch('/agent/search/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: text,
+            opportunity_type: 'all'
+          })
+        });
+
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+        // Parse streaming response
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let hasReasoning = false;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
             
-            <!-- Response Text -->
-            <p id="responseText" class="text-slate-300 leading-relaxed mb-4"></p>
+            const dataStr = line.slice(6);
+            if (dataStr === '[DONE]') break;
+            
+            try {
+              const event = JSON.parse(dataStr);
+              
+              if (event.type === 'thinking') {
+                removeTyping();
+                addMessage(`🤔 ${event.content}`, 'bot');
+                addTyping();
+              } 
+              else if (event.type === 'opportunity' && event.data) {
+                removeTyping();
+                displayOpportunity(event.data);
+                addTyping();
+              }
+              else if (event.type === 'reasoning' && event.content) {
+                removeTyping();
+                hasReasoning = true;
+                addMessage(`💡 ${event.content}`, 'bot');
+              }
+              else if (event.type === 'error') {
+                removeTyping();
+                addMessage(`⚠️ Error: ${event.error}`, 'bot');
+              }
+            } catch (e) {
+              console.error('Parse error:', e);
+            }
+          }
+        }
 
-            <!-- Sources Used -->
-            <div id="sourcesContainer" class="mt-4 pt-4 border-t border-[#1e2d42]">
-              <p class="text-xs text-slate-500 mono mb-3">Sources searched:</p>
-              <div class="flex flex-wrap gap-2" id="sourcesList"></div>
-            </div>
+        removeTyping();
+        if (!hasReasoning) {
+          addMessage('✅ Search completed. Found opportunities above!', 'bot');
+        }
+      } catch (error) {
+        removeTyping();
+        console.error('Agent error:', error);
+        addMessage(`❌ Error: ${error.message}`, 'bot');
+      } finally {
+        isWaiting = false;
+      }
+    }
+
+    function displayOpportunity(data) {
+      const area = document.getElementById('chatArea');
+      const card = document.createElement('div');
+      card.className = 'fade-up';
+      card.style.cssText = 'margin: 16px 0; padding: 16px; background: rgba(13,22,39,0.9); border: 1px solid #1a2a40; border-radius: 12px;';
+      
+      const posted = data.posted_date || data.posted || 'Recently';
+      const exp = data.experience || 'Not specified';
+      const salary = data.salary || 'Competitive';
+      
+      card.innerHTML = `
+        <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 12px;">
+          <div style="width: 32px; height: 32px; background: rgba(45,212,191,0.2); border: 1px solid rgba(45,212,191,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            💼
+          </div>
+          <div>
+            <div style="font-weight: 700; color: #e8e2d9; margin-bottom: 4px;">${escapeHtml(data.title || 'Opportunity')}</div>
+            <div style="color: #2dd4bf; font-size: 13px; margin-bottom: 2px;">${escapeHtml(data.company || 'Company')}</div>
+            <div style="color: #4a6070; font-size: 12px;">${escapeHtml(data.location || 'Location')}</div>
           </div>
         </div>
-
-        <!-- Opportunities Grid -->
-        <div id="opportunitiesContainer" style="display: none;" class="mt-6">
-          <p class="text-sm text-slate-500 mono mb-4">Opportunities found:</p>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" id="opportunitiesGrid"></div>
+        <div style="color: #4a6070; font-size: 13px; line-height: 1.5; margin-bottom: 12px;">
+          ${escapeHtml((data.description || '').substring(0, 150))}${(data.description || '').length > 150 ? '...' : ''}
         </div>
-      </div>
-    </div>
-
-    <!-- Input Area -->
-    <div class="border-t border-[#1e2d42] p-6 bg-[#0f1622]/50">
-      <div class="max-w-4xl mx-auto">
-        <div class="flex gap-3">
-          <input
-            type="text"
-            id="agentInput"
-            placeholder="Ask me anything about jobs, internships, learning opportunities..."
-            onkeydown="if(event.key==='Enter' && !event.shiftKey) sendMessage()"
-            class="flex-1 bg-[#161f30] border border-[#1e2d42] rounded-xl px-5 py-4 text-slate-300 placeholder-slate-500 focus:border-teal-400 outline-none transition-colors"
-          />
-          <button onclick="sendMessage()" class="px-6 py-4 bg-teal-400 hover:bg-teal-500 text-[#0b1120] rounded-xl font-bold transition-colors">
-            Send
-          </button>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+          <span style="background: rgba(255,255,255,0.04); border: 1px solid #1a2a40; border-radius: 16px; padding: 4px 10px; font-size: 11px; color: #4a6070;">
+            📅 ${posted}
+          </span>
+          <span style="background: rgba(255,255,255,0.04); border: 1px solid #1a2a40; border-radius: 16px; padding: 4px 10px; font-size: 11px; color: #4a6070;">
+            ⏰ ${exp}
+          </span>
+          <span style="background: rgba(255,255,255,0.04); border: 1px solid #1a2a40; border-radius: 16px; padding: 4px 10px; font-size: 11px; color: #4a6070;">
+            💰 ${salary}
+          </span>
         </div>
-        <p class="text-xs text-slate-500 mt-2 mono">💡 Shift+Enter for new line</p>
-      </div>
-    </div>
-  </main>
+        <a href="${data.url || '#'}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; border: 1px solid #2dd4bf; color: #2dd4bf; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: all 0.2s; cursor: pointer;">
+          View Details →
+        </a>
+      `;
+      
+      area.appendChild(card);
+      area.scrollTop = area.scrollHeight;
+    }
 
-  <script src="/src/JS/modules/agent.js"></script>
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    let isWaiting = false;
+
+    function addMessage(text, role) {
+      const area = document.getElementById('chatArea');
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + role + ' fade-up';
+
+      const time = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+      const isBot = role === 'bot';
+
+      row.innerHTML = `
+        ${isBot ? `<div class="msg-avatar bot">🤖</div>` : ''}
+        <div>
+          <div class="msg-bubble ${role}">${text.replace(/\n/g,'<br>')}</div>
+          <div class="msg-time">${time}</div>
+        </div>
+        ${!isBot ? `<div class="msg-avatar user">👤</div>` : ''}
+      `;
+      area.appendChild(row);
+      area.scrollTop = area.scrollHeight;
+    }
+
+    function addTyping() {
+      const area = document.getElementById('chatArea');
+      const row = document.createElement('div');
+      row.className = 'msg-row fade-in'; row.id = 'typingRow';
+      row.innerHTML = `
+        <div class="msg-avatar bot">🤖</div>
+        <div class="msg-bubble bot" style="padding:16px 18px;">
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>`;
+      area.appendChild(row);
+      area.scrollTop = area.scrollHeight;
+    }
+
+    function removeTyping() {
+      const t = document.getElementById('typingRow');
+      if (t) t.remove();
+    }
+
+  </script>
 </body>
 </html>

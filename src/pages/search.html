@@ -6,6 +6,9 @@
   <title>Job Search - JIRAG</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Mono&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/src/css/shared.css">
+  <link rel="stylesheet" href="/src/css/sidebar.css">
+  <link rel="stylesheet" href="/src/css/output.css">
   <style>
     body { font-family: 'Cairo', sans-serif; }
     .mono { font-family: 'Space Mono', monospace; }
@@ -16,11 +19,7 @@
     .cursor  { display:inline-block; width:2px; height:1.1em; background:#2dd4bf; margin-right:2px; vertical-align:text-bottom; animation:blink 1s step-end infinite; }
 
     /* Sidebar */
-    aside { position:fixed; right:0; top:0; width:240px; height:100vh; background:#0b1422; border-left:1px solid #1a2840; display:flex; flex-direction:column; z-index:40; overflow-y:auto; }
-    .nav-link { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px; text-decoration:none; color:#7a8a9e; font-weight:600; font-size:14px; transition:all 0.2s; margin-bottom:4px; position:relative; }
-    .nav-link:hover { background:#141e2e; color:#f1ede6; }
-    .nav-link.active { background:rgba(45,212,191,0.1); border:1px solid rgba(45,212,191,0.2); color:#2dd4bf; }
-    .nav-badge { position:absolute; top:6px; left:10px; background:#ef4444; color:#fff; font-size:10px; font-weight:700; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+    
   </style>
 </head>
 
@@ -28,38 +27,49 @@
 
   <!-- Sidebar -->
   <aside>
-    <div class="p-6 border-b border-[#1a2840]">
-      <h1 class="text-2xl font-black bg-gradient-to-br from-[#f1ede6] to-teal-400 bg-clip-text text-transparent">JIRAG</h1>
-      <p class="text-xs text-slate-500 mono mt-1">Career Platform</p>
+    <div class="sidebar-logo">
+      <div class="logo-mark">JIRAG</div>
+      <!-- <div class="logo-sub">Career Copilot · v2.0</div> -->
     </div>
 
-    <div class="px-5 pt-4 pb-1 text-[10px] mono text-slate-500 tracking-widest">MAIN</div>
-    <nav class="px-3 flex-1">
-      <a href="/"              class="nav-link"><span>📊</span> Dashboard</a>
-      <a href="/search"        class="nav-link active"><span>🔍</span> Job Search</a>
-      <a href="/agent"         class="nav-link"><span>🤖</span> AI Agent</a>
-      <div class="px-2 pt-4 pb-1 text-[10px] mono text-slate-500 tracking-widest">INSIGHTS</div>
-      <a href="/prediction"    class="nav-link"><span>🎯</span> Career Prediction</a>
-      <a href="/notifications" class="nav-link">
-        <span>🔔</span> Notifications
-        <span class="nav-badge">3</span>
+    <nav>
+      <div class="nav-section-label">Main</div>
+
+      <a href="/" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="/search" class="nav-item active">
+        <span class="nav-icon">🔍</span>
+        <span>Job Search</span>
+      </a>
+      <a href="/agent" class="nav-item">
+        <span class="nav-icon">🤖</span>
+        <span>AI Agent</span>
+      </a>
+
+      <div class="nav-section-label" style="margin-top:12px">Insights</div>
+
+      <a href="/prediction" class="nav-item">
+        <span class="nav-icon">🎯</span>
+        <span>Career Prediction</span>
+      </a>
+      <a href="/notifications" class="nav-item">
+        <span class="nav-icon">🔔</span>
+        <span>Notifications</span>
+        <span class="badge">3</span>
       </a>
     </nav>
 
-    <div class="p-4 border-t border-[#1a2840]">
-      <p class="text-[10px] mono text-slate-500 tracking-widest mb-3">ACTIVE SOURCES</p>
-      <div class="space-y-2">
-        <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer hover:text-teal-400 transition-colors"><input type="checkbox" checked class="accent-teal-400"> 🔗 LinkedIn</label>
-        <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer hover:text-teal-400 transition-colors"><input type="checkbox" checked class="accent-teal-400"> 🟢 Wuzzuf</label>
-        <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer hover:text-teal-400 transition-colors"><input type="checkbox" checked class="accent-teal-400"> 📚 ITI / NTI</label>
-        <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer hover:text-teal-400 transition-colors"><input type="checkbox" checked class="accent-teal-400"> 👥 Facebook Groups</label>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar"></div>
+        <div class="user-info">
+          <!-- <div class="name">Ahmed Hassan</div> -->
+          <div class="role">Agentic AI Engineer</div>
+        </div>
+        <span style="color:var(--muted); font-size:18px; margin-right:auto;">⚙️</span>
       </div>
-    </div>
-
-    <div class="p-4 border-t border-[#1a2840] flex items-center gap-3">
-      <span class="text-slate-500 text-lg cursor-pointer hover:text-teal-400 transition-colors">⚙️</span>
-      <span class="text-sm font-semibold text-slate-300">Career Seeker</span>
-      <div class="w-8 h-8 bg-teal-400 rounded-lg mr-auto"></div>
     </div>
   </aside>
 

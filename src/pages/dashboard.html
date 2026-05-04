@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JIRAG — Career Copilot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="/src/css/sidebar.css">
-  <link rel="stylesheet" href="/src/css/shared.css">
+  <!-- <link rel="stylesheet" href="/src/css/shared.css"> -->
   <!-- charts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
       --bg: #060c18;
@@ -20,8 +29,8 @@
       --border: #1a2840;
       --border2: #243350;
       --teal: #2dd4bf;
-      --teal-dim: rgba(45,212,191,0.12);
-      --teal-glow: rgba(45,212,191,0.25);
+      --teal-dim: rgba(45, 212, 191, 0.12);
+      --teal-glow: rgba(45, 212, 191, 0.25);
       --text: #eee9e0;
       --muted: #5a6a82;
       --orange: #fb923c;
@@ -43,16 +52,20 @@
       position: fixed;
       inset: 0;
       background-image:
-        radial-gradient(ellipse 80% 60% at 80% -10%, rgba(45,212,191,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 20% 110%, rgba(6,182,212,0.05) 0%, transparent 60%);
+        radial-gradient(ellipse 80% 60% at 80% -10%, rgba(45, 212, 191, 0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 20% 110%, rgba(6, 182, 212, 0.05) 0%, transparent 60%);
       pointer-events: none;
       z-index: 0;
     }
 
-    .mono { font-family: 'Space Mono', monospace; }
-    .display { font-family: 'Syne', sans-serif; }
+    .mono {
+      font-family: 'Space Mono', monospace;
+    }
 
-    </style>
+    .display {
+      font-family: 'Syne', sans-serif;
+    }
+  </style>
 </head>
 
 <body>
@@ -98,7 +111,8 @@
         <div class="avatar"></div>
         <div class="user-info">
           <!-- <div class="name">Ahmed Hassan</div> -->
-          <div class="role">Agentic AI Engineer</div>
+          <div class="role">Junior Python Developer</div>
+          <div style="font-size:11px;color:var(--muted)">Cairo, Egypt</div>
         </div>
         <span style="color:var(--muted); font-size:18px; margin-right:auto;">⚙️</span>
       </div>
@@ -111,9 +125,9 @@
     <!-- Header -->
     <div class="page-header">
       <div>
-        <div class="greeting-sub">Date</div>
+        <div class="greeting-sub">Friday, 1 May 2026</div>
         <!-- <h1 class="greeting-title">Good morning, Ahmed 👋</h1> -->
-        <p class="greeting-desc">Your AI copilot found 12 new opportunities overnight.</p>
+        <p class="greeting-desc">8 new Python/ML opportunities match your profile. 2 applied this week.</p>
       </div>
       <div class="header-actions">
         <div class="status-pill status-live">
@@ -130,36 +144,44 @@
 
     <!-- Stats -->
     <div class="stats-grid">
-      <div class="stat-card" style="animation-delay:0.05s">
+      <div class="stat-card">
         <span class="stat-icon">🏆</span>
-        <div class="stat-label">Profile Score</div>
-        <div class="stat-value">85<span style="font-size:20px;color:var(--muted)">%</span></div>
-        <div class="stat-delta up">↑ 5% this month</div>
-        <div class="stat-bar"><div class="stat-bar-fill" style="width:85%"></div></div>
+        <div class="stat-label">Profile Strength</div>
+        <div class="stat-value" id="profileStrength">78<span style="font-size:20px;color:var(--muted)">%</span></div>
+        <div class="stat-delta up">↑ Complete your CV</div>
+        <div class="stat-bar">
+          <div class="stat-bar-fill" style="width:78%" id="profileStrengthBar"></div>
+        </div>
       </div>
 
-      <div class="stat-card" style="animation-delay:0.12s">
+      <div class="stat-card">
         <span class="stat-icon">💼</span>
-        <div class="stat-label">Opportunities</div>
-        <div class="stat-value">127</div>
-        <div class="stat-delta up">↑ 12 this week</div>
-        <div class="stat-bar"><div class="stat-bar-fill" style="width:72%"></div></div>
+        <div class="stat-label">Total Jobs</div>
+        <div class="stat-value" id="totalJobsStat">--</div>
+        <div class="stat-delta up" id="newJobsDelta">↑ -- new today</div>
+        <div class="stat-bar">
+          <div class="stat-bar-fill" style="width:100%"></div>
+        </div>
       </div>
 
-      <div class="stat-card" style="animation-delay:0.19s">
+      <div class="stat-card">
         <span class="stat-icon">📤</span>
-        <div class="stat-label">Applications</div>
-        <div class="stat-value">8</div>
-        <div class="stat-delta neutral">2 pending review</div>
-        <div class="stat-bar"><div class="stat-bar-fill" style="width:40%; background:linear-gradient(90deg,#fb923c,#f97316)"></div></div>
+        <div class="stat-label">Recent Opportunities</div>
+        <div class="stat-value" id="freshJobsStat">--</div>
+        <div class="stat-delta neutral">From active sources</div>
+        <div class="stat-bar">
+          <div class="stat-bar-fill" style="width:55%; background:linear-gradient(90deg,#fb923c,#f97316)"></div>
+        </div>
       </div>
 
-      <div class="stat-card" style="animation-delay:0.26s">
-        <span class="stat-icon">🎙️</span>
-        <div class="stat-label">Interviews</div>
-        <div class="stat-value">3</div>
-        <div class="stat-delta warn">Next week</div>
-        <div class="stat-bar"><div class="stat-bar-fill" style="width:20%; background:linear-gradient(90deg,#fb923c,#f87171)"></div></div>
+      <div class="stat-card">
+        <span class="stat-icon">🌐</span>
+        <div class="stat-label">Active Sources</div>
+        <div class="stat-value" id="activeSourcesStat">--</div>
+        <div class="stat-delta warn">LinkedIn, Wuzzuf, etc.</div>
+        <div class="stat-bar">
+          <div class="stat-bar-fill" style="width:15%; background:linear-gradient(90deg,#fb923c,#f87171)"></div>
+        </div>
       </div>
     </div>
 
@@ -168,10 +190,10 @@
       <!-- Chart -->
       <div class="chart-card">
         <div class="section-header">
-          <span class="section-title">📈 Opportunity Trend</span>
+          <span class="section-title">📈 Jobs by Source</span>
           <div style="display:flex;gap:8px">
-            <span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--teal);cursor:pointer">Week</span>
-            <span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);cursor:pointer">Month</span>
+            <span style="font-size:11px;font-family:'Space Mono',monospace;color:var(--teal);cursor:pointer">Live
+              Data</span>
           </div>
         </div>
         <canvas id="trendChart" style="max-height:180px"></canvas>
@@ -180,36 +202,18 @@
       <!-- Activity Feed -->
       <div class="activity-card">
         <div class="section-header">
-          <span class="section-title">⚡ Live Activity</span>
-          <span class="status-pill status-live" style="font-size:10px;padding:3px 8px"><span class="dot"></span>Live</span>
+          <span class="section-title">⚡ Recent Updates</span>
+          <span class="status-pill status-live" style="font-size:10px;padding:3px 8px"><span
+              class="dot"></span>Live</span>
         </div>
 
-        <div class="activity-item">
-          <span class="activity-dot" style="background:var(--teal)"></span>
-          <div>
-            <div class="activity-text">AI Agent found <strong style="color:var(--teal)">Senior Python Dev</strong> at AZM Squad</div>
-            <div class="activity-time">2 min ago</div>
-          </div>
-        </div>
-        <div class="activity-item">
-          <span class="activity-dot" style="background:var(--green)"></span>
-          <div>
-            <div class="activity-text">Application <strong style="color:var(--green)">shortlisted</strong> at Vodafone Egypt</div>
-            <div class="activity-time">1 hr ago</div>
-          </div>
-        </div>
-        <div class="activity-item">
-          <span class="activity-dot" style="background:var(--orange)"></span>
-          <div>
-            <div class="activity-text">Interview reminder: <strong style="color:var(--orange)">Noon Egypt</strong> on Tue 28 Apr</div>
-            <div class="activity-time">3 hr ago</div>
-          </div>
-        </div>
-        <div class="activity-item">
-          <span class="activity-dot" style="background:var(--muted)"></span>
-          <div>
-            <div class="activity-text">n8n workflow pushed 4 new notifications</div>
-            <div class="activity-time">6 hr ago</div>
+        <div id="activityFeedContainer">
+          <div class="activity-item">
+            <span class="activity-dot" style="background:var(--muted)"></span>
+            <div>
+              <div class="activity-text">Loading live updates...</div>
+              <div class="activity-time">Just now</div>
+            </div>
           </div>
         </div>
       </div>
@@ -238,170 +242,163 @@
     </div>
 
     <!-- Recent Opportunities -->
-    <div class="section-header" style="margin-top:8px">
+    <div class="section-header" style="margin-top:24px; display: flex; align-items: center; gap: 10px;">
       <span class="section-title">🌟 Recent Opportunities</span>
-      <a href="/search" class="view-all">View all →</a>
-      <button id="refreshOpportunities" class="refresh-btn" style="margin-left:auto; background:none; border:none; color:var(--teal); cursor:pointer;">
-        🔄
+      <a href="/search" class="view-all" style="color: var(--teal); font-size: 14px; text-decoration: none;">View all
+        →</a>
+      <button id="refreshOpportunities" class="refresh-btn"
+        style="background:none; border:none; color:var(--teal); cursor:pointer; font-size: 16px; margin-right: auto; padding: 4px;">
+        🔄 Refresh
       </button>
     </div>
 
-    <div id="opportunitiesLoading" class="text-center py-8">
-      <div class="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin mb-2"></div>
-      <p class="text-slate-400 text-sm">Loading opportunities...</p>
+    <div id="opportunitiesLoading" style="text-align: center; padding: 2rem 0;">
+      <p style="color: var(--muted); font-family: 'Space Mono', monospace;">Loading opportunities...</p>
     </div>
 
-    <div id="opportunitiesContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    <div id="opportunitiesContainer"
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px;">
       <!-- Opportunities will be inserted here by JavaScript -->
     </div>
 
   </main>
 
   <script>
-    // Chart
-    const ctx = document.getElementById('trendChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-        datasets: [{
-          label: 'Opportunities',
-          data: [18, 24, 19, 31, 28, 35, 42],
-          borderColor: '#2dd4bf',
-          backgroundColor: (ctx) => {
-            const g = ctx.chart.ctx.createLinearGradient(0,0,0,180);
-            g.addColorStop(0,'rgba(45,212,191,0.18)');
-            g.addColorStop(1,'rgba(45,212,191,0)');
-            return g;
-          },
-          borderWidth: 2.5,
-          pointRadius: 4,
-          pointBackgroundColor: '#2dd4bf',
-          pointBorderColor: '#060c18',
-          pointBorderWidth: 2,
-          tension: 0.45,
-          fill: true,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: { legend: { display: false }, tooltip: {
-          backgroundColor: '#0d1626',
-          borderColor: '#1a2840',
-          borderWidth: 1,
-          titleColor: '#5a6a82',
-          bodyColor: '#eee9e0',
-          titleFont: { family: 'Space Mono', size: 10 },
-          bodyFont: { family: 'Syne', size: 15, weight: '700' },
-          padding: 12,
-        }},
-        scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6a82', font: { family: 'Space Mono', size: 10 }}},
-          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6a82', font: { family: 'Space Mono', size: 10 }}, beginAtZero: true }
+    // Initialize empty chart
+    let myChart = null;
+
+    async function loadDashboardData() {
+      // Load Stats
+      try {
+        const statsResponse = await fetch('/api/dashboard-stats');
+        const stats = await statsResponse.json();
+
+        if (!stats.error) {
+          document.getElementById('totalJobsStat').innerText = stats.totalOpportunities || 0;
+          document.getElementById('freshJobsStat').innerText = stats.totalOpportunities || 0;
+          document.getElementById('activeSourcesStat').innerText = stats.activeSources || 0;
+          document.getElementById('newJobsDelta').innerText = `↑ ${stats.newThisWeek || 0} new this week`;
+          document.getElementById('profileStrength').innerHTML = `${stats.profileScore || 82}<span style="font-size:20px;color:var(--muted)">%</span>`;
+          document.getElementById('profileStrengthBar').style.width = `${stats.profileScore || 82}%`;
+
+          // Draw Chart
+          const sources = stats.sourceDistribution || [];
+          const labels = sources.map(s => s.label.toUpperCase());
+          const data = sources.map(s => s.value);
+
+          const ctx = document.getElementById('trendChart').getContext('2d');
+          if (myChart) myChart.destroy();
+          myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels.length ? labels : ['LinkedIn', 'Wuzzuf', 'Other'],
+              datasets: [{
+                label: 'Jobs Available',
+                data: data.length ? data : [15, 20, 5],
+                backgroundColor: 'rgba(45, 212, 191, 0.4)',
+                borderColor: '#2dd4bf',
+                borderWidth: 2,
+                borderRadius: 4,
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: '#0d1626',
+                  borderColor: '#1a2840',
+                  borderWidth: 1,
+                  titleColor: '#5a6a82',
+                  bodyColor: '#eee9e0',
+                  titleFont: { family: 'Space Mono', size: 10 },
+                  bodyFont: { family: 'Syne', size: 14, weight: '700' },
+                  padding: 12,
+                }
+              },
+              scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6a82', font: { family: 'Space Mono', size: 10 } } },
+                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6a82', font: { family: 'Space Mono', size: 10 } }, beginAtZero: true }
+              }
+            }
+          });
         }
+      } catch (err) {
+        console.error('Failed to load stats', err);
       }
-    });
-   </script>
-   
-   <script>
-   // Fetch and display recent opportunities
-   async function loadRecentOpportunities() {
-       const container = document.getElementById('opportunitiesContainer');
-       const loading = document.getElementById('opportunitiesLoading');
-       
-       try {
-           loading.style.display = 'block';
-           container.style.display = 'none';
-           
-           // Fetch recent opportunities from the search endpoint
-           const response = await fetch('/search/stream', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ 
-                   query: 'recent opportunities',
-                   opportunity_type: 'all'
-               })
-           });
-           
-           const reader = response.body.getReader();
-           const decoder = new TextDecoder();
-           let buffer = '';
-           let opportunities = [];
-           
-           while (true) {
-               const { done, value } = await reader.read();
-               if (done) break;
-               
-               buffer += decoder.decode(value);
-               const lines = buffer.split('\n');
-               buffer = lines.pop();
-               
-               for (const line of lines) {
-                   if (!line.startsWith('data: ')) continue;
-                   const data = line.slice(6);
-                   if (data === '[DONE]') break;
-                   
-                   try {
-                       const event = JSON.parse(data);
-                       if (event.type === 'opportunity') {
-                           opportunities.push(event.data);
-                       }
-                   } catch (e) {
-                       console.error('Error parsing event:', e);
-                   }
-               }
-           }
-           
-           // Clear and populate container
-           container.innerHTML = '';
-           
-           if (opportunities.length === 0) {
-               container.innerHTML = `
-                   <div class="col-span-2 text-center py-8">
-                       <p class="text-slate-400">No recent opportunities found. Try searching for specific roles.</p>
-                   </div>
-               `;
-           } else {
-               // Display up to 6 recent opportunities
-               opportunities.slice(0, 6).forEach(opp => {
-                   const card = document.createElement('div');
-                   card.className = 'job-card';
-                   card.innerHTML = `
-                       <div class="job-logo">💼</div>
-                       <div class="job-info">
-                           <div class="job-title">${opp.title || 'Opportunity'}</div>
-                           <div class="job-company">${opp.company || 'Unknown Company'} · ${opp.location || 'Egypt'}</div>
-                           <div class="job-tags">
-                               <span class="tag">${opp.job_type || 'Full-time'}</span>
-                               <span class="tag">${opp.experience || 'Experience'}</span>
-                           </div>
-                       </div>
-                       <span class="match-badge match-high">${opp.match || '85'}%</span>
-                       <button class="view-btn" onclick="window.open('${opp.url || '#'}', '_blank')">View</button>
-                   `;
-                   container.appendChild(card);
-               });
-           }
-           
-       } catch (error) {
-           console.error('Error loading opportunities:', error);
-           container.innerHTML = `
-               <div class="col-span-2 text-center py-8">
-                   <p class="text-slate-400">Failed to load opportunities. Please try again later.</p>
-               </div>
-           `;
-       } finally {
-           loading.style.display = 'none';
-           container.style.display = 'grid';
-       }
-   }
-   
-   // Refresh button handler
-   document.getElementById('refreshOpportunities').addEventListener('click', loadRecentOpportunities);
-   
-   // Load opportunities on page load
-   document.addEventListener('DOMContentLoaded', loadRecentOpportunities);
-   </script>
+
+      // Load Recent Opportunities
+      try {
+        const container = document.getElementById('opportunitiesContainer');
+        const loading = document.getElementById('opportunitiesLoading');
+        const activityFeed = document.getElementById('activityFeedContainer');
+
+        loading.style.display = 'block';
+        container.style.display = 'none';
+
+        const oppsResponse = await fetch('/api/recent-opportunities?limit=8');
+        const oppsData = await oppsResponse.json();
+
+        loading.style.display = 'none';
+        container.style.display = 'grid';
+
+        if (!oppsData.error && oppsData.opportunities && oppsData.opportunities.length > 0) {
+          container.innerHTML = '';
+          activityFeed.innerHTML = '';
+
+          const colors = ['var(--teal)', 'var(--green)', 'var(--orange)', '#3b82f6'];
+
+          oppsData.opportunities.forEach((opp, i) => {
+            // Populate Opportunities Grid
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            card.innerHTML = `
+                <div class="job-logo">💼</div>
+                <div class="job-info">
+                    <div class="job-title">${opp.title || 'Opportunity'}</div>
+                    <div class="job-company">${opp.company || 'Unknown Company'} · ${opp.location || 'Egypt'}</div>
+                    <div class="job-tags">
+                        <span class="tag">${opp.job_type || 'Full-time'}</span>
+                        <span class="tag">${opp.experience || 'Experience'}</span>
+                    </div>
+                </div>
+                <span class="match-badge match-high">${opp.match || 85}%</span>
+                <button class="view-btn" onclick="window.open('${opp.url || '#'}', '_blank')">View</button>
+            `;
+            container.appendChild(card);
+
+            // Populate Activity Feed top 4 items
+            if (i < 4) {
+              const acts = ['Just posted', 'AI Match found', 'New posting', 'Highly relevant'];
+              const act = acts[i % acts.length];
+              const color = colors[i % colors.length];
+
+              const actDiv = document.createElement('div');
+              actDiv.className = 'activity-item';
+              actDiv.innerHTML = `
+                <span class="activity-dot" style="background:${color}"></span>
+                <div>
+                  <div class="activity-text">${act} <strong style="color:${color}">${opp.title}</strong> at ${opp.company}</div>
+                  <div class="activity-time">Just now · ${opp.source}</div>
+                </div>
+              `;
+              activityFeed.appendChild(actDiv);
+            }
+          });
+        } else {
+          container.innerHTML = '<div class="col-span-2 text-center py-8"><p class="text-slate-400">No recent opportunities found.</p></div>';
+        }
+      } catch (err) {
+        console.error('Failed to load opportunities', err);
+      }
+    }
+
+    document.getElementById('refreshOpportunities').addEventListener('click', loadDashboardData);
+    document.addEventListener('DOMContentLoaded', loadDashboardData);
+  </script>
+
+
 </body>
+
 </html>
